@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="决策日记">
+<meta name="theme-color" content="#FAF8F3">
+<link rel="apple-touch-icon" href="icon.png">
+<title>决策日记</title>
+<style>
+  :root {
+    --paper: #FAF8F3;
+    --card: #FFFFFF;
+    --ink: #2C2A26;
+    --ink-soft: #6B665C;
+    --gray: #8F897D;
+    --gray-light: #A9A49B;
+    --gray-faint: #C2BDB2;
+    --gray-mute: #B8B3A8;
+    --line: #EAE6DC;
+    --line-faint: #EFEBE2;
+    --serif: "Songti SC", "Noto Serif SC", Georgia, serif;
+    --sans: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--paper); font-family: var(--sans); color: var(--ink); }
+  .app { max-width: 420px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
+  .screen { flex: 1; padding: 24px 24px 90px; display: none; }
+  .screen.active { display: block; }
+  .page-title { font-family: var(--serif); font-size: 22px; letter-spacing: 0.5px; }
+  .page-sub { font-size: 13px; color: var(--gray-light); margin-top: 6px; }
+  .header { padding: 18px 0 16px; }
+  .review-line { border-top: 1px solid var(--line); padding: 14px 0 16px; font-family: var(--serif); font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; cursor: pointer; }
+  .month { font-size: 12px; color: var(--gray-mute); letter-spacing: 3px; margin: 18px 0 10px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 17px 15px; margin-bottom: 12px; cursor: pointer; transition: border-color .25s ease; }
+  .card:active { border-color: #D8D3C8; }
+  .card .name { font-family: var(--serif); font-size: 17px; }
+  .card .state { font-size: 12px; color: var(--gray-light); letter-spacing: 0.3px; margin-top: 6px; }
+  .card .quote { font-size: 13.5px; color: var(--gray); line-height: 1.65; margin-top: 11px; }
+  .filters { display: flex; gap: 20px; border-bottom: 1px solid var(--line); padding: 6px 0 0; }
+  .filter { font-size: 13px; color: var(--gray-mute); padding-bottom: 10px; cursor: pointer; border-bottom: 1px solid transparent; }
+  .filter.on { color: var(--ink); border-bottom-color: var(--ink); }
+  .cat { font-size: 12px; color: var(--gray-mute); letter-spacing: 3px; margin: 20px 0 2px; }
+  .row { padding: 12px 0; border-bottom: 1px solid var(--line-faint); cursor: pointer; }
+  .row-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .row .name { font-size: 14.5px; }
+  .row .time { font-size: 12px; color: var(--gray); flex-shrink: 0; }
+  .row .sub { font-size: 11.5px; color: var(--gray-faint); margin-top: 4px; }
+  .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--paper); border-top: 1px solid var(--line); }
+  .tabbar-inner { max-width: 420px; margin: 0 auto; display: flex; justify-content: space-around; padding: 14px 0 max(20px, env(safe-area-inset-bottom)); }
+  .tab { font-size: 13px; color: var(--gray-mute); cursor: pointer; }
+  .tab.on { color: var(--ink); }
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding-top: 4px; }
+  .topbar .side { font-size: 13px; color: var(--ink-soft); font-weight: 300; cursor: pointer; }
+  .plus { font-size: 20px; }
+  .back { font-size: 13px; color: var(--ink-soft); cursor: pointer; padding: 4px 0; }
+  .bio-name { font-family: var(--serif); font-size: 22px; margin-top: 22px; }
+  .bio-state { font-size: 12.5px; color: var(--gray-light); margin-top: 8px; letter-spacing: 0.3px; }
+  .entry { border-top: 1px solid var(--line-faint); margin-top: 26px; padding-top: 18px; }
+  .entry:first-of-type { border-top: none; }
+  .entry .e-head { display: flex; align-items: baseline; }
+  .entry .date { font-size: 11.5px; color: var(--gray-mute); letter-spacing: 2px; }
+  .entry .kind { font-size: 11.5px; color: var(--gray-light); margin-left: 10px; }
+  .entry .e-del { margin-left: auto; font-size: 13px; color: var(--gray-light); cursor: pointer; line-height: 1; padding: 3px 8px; border: 1px solid var(--line); border-radius: 7px; }
+  .entry .text { font-family: var(--serif); font-size: 15px; line-height: 1.9; color: var(--ink); margin-top: 12px; }
+  .meta { margin-top: 40px; border-top: 1px solid var(--line); padding-top: 8px; }
+  .meta summary { font-size: 12px; color: var(--gray-mute); padding: 10px 0; cursor: pointer; list-style: none; }
+  .meta summary::-webkit-details-marker { display: none; }
+  .meta .mrow { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; color: var(--gray); }
+  .meta .mrow span:last-child { color: var(--ink-soft); }
+  .create-q { font-family: var(--serif); font-size: 20px; margin-top: 44px; line-height: 1.6; }
+  .create-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--line); font-family: var(--serif); font-size: 16px; padding: 14px 0 10px; outline: none; color: var(--ink); }
+  .create-input::placeholder, .create-area::placeholder { color: var(--gray-faint); }
+  .create-area { width: 100%; min-height: 150px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 15px; font-family: var(--serif); font-size: 15px; line-height: 1.9; outline: none; resize: none; color: var(--ink); margin-top: 20px; }
+  .create-actions { margin-top: 30px; display: flex; gap: 12px; align-items: center; }
+  .btn { font-family: var(--sans); font-size: 13.5px; padding: 10px 22px; border-radius: 22px; cursor: pointer; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); }
+  .btn.ghost { background: transparent; border-color: var(--line); color: var(--gray); }
+  .overlay { position: fixed; inset: 0; background: var(--paper); display: none; align-items: center; justify-content: center; text-align: center; padding: 44px; z-index: 10; }
+  .overlay.show { display: flex; }
+  .ritual-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 42px 30px 28px; width: 100%; max-width: 300px; }
+  .r-label { font-size: 11px; color: var(--gray-mute); letter-spacing: 5px; }
+  .r-name { font-family: var(--serif); font-size: 21px; color: var(--ink); margin-top: 20px; }
+  .r-text { font-family: var(--serif); font-size: 14.5px; line-height: 2.1; color: var(--ink-soft); margin-top: 16px; }
+  .r-date { font-size: 11px; color: var(--gray-faint); margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line-faint); letter-spacing: 2px; }
+  .overlay .small { font-size: 12px; color: var(--gray-faint); margin-top: 28px; }
+  .photo-preview { width: 88px; height: 88px; object-fit: cover; border-radius: 12px; margin-top: 12px; border: 1px solid var(--line); display: none; }
+  .detail-actions { margin-top: 36px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .compose { margin-top: 24px; display: none; }
+  .compose-hint { font-size: 12px; color: var(--gray-light); margin-top: 12px; display: none; }
+  .del-link { font-size: 12px; color: var(--gray-light); padding: 14px 0 4px; cursor: pointer; }
+  .del-warn { font-size: 13px; color: var(--ink-soft); margin-top: 12px; }
+  .del-hint { font-size: 12px; color: var(--gray-light); margin-top: 8px; line-height: 1.8; }
+  .del-done { color: var(--ink-soft); margin-left: 10px; cursor: pointer; border-bottom: 1px solid var(--line); }
+  .photo-line { margin-top: 16px; font-size: 12.5px; color: var(--gray-light); cursor: pointer; }
+  .photo-line .picked { color: var(--ink-soft); }
+  .entry img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; margin-top: 12px; display: block; }
+  .card-row { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+  .card-thumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--line); }
+  .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 1px solid var(--line); display: none; cursor: pointer; }
+  .avatar-ph { width: 72px; height: 72px; border-radius: 50%; border: 1px dashed var(--gray-faint); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--gray-faint); cursor: pointer; text-align: center; line-height: 1.5; }
+  .me-name { background: transparent; border: none; outline: none; font-family: var(--serif); font-size: 19px; color: var(--ink); width: 100%; padding: 0; position: relative; top: -2px; }
+  .me-name::placeholder { color: var(--gray-faint); }
+  .settings-group { margin-top: 28px; }
+  .settings-row { padding: 15px 0; border-bottom: 1px solid var(--line-faint); font-size: 14.5px; color: var(--ink); display: flex; justify-content: space-between; }
+  .settings-row span:last-child { color: var(--gray-faint); font-size: 13px; }
+  .empty-note { font-family: var(--serif); font-size: 13.5px; color: var(--gray-light); line-height: 1.8; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="screen active" id="screen-timeline">
+    <div class="topbar"><span></span><span class="side plus" onclick="openCreate()">＋</span></div>
+    <div class="header">
+      <p class="page-title" id="today-date">七月十七日</p>
+      <p class="page-sub">你正在考虑两件东西</p>
+    </div>
+    <p class="review-line" onclick="openDetail('headphone')">降噪耳机已经陪你三个月了，感觉如何？</p>
+    <div id="timeline-list"></div>
+  </div>
+
+  <div class="screen" id="screen-index">
+    <div class="topbar"><span></span><span class="side">搜索</span></div>
+    <div class="header">
+      <p class="page-title">索引</p>
+      <p class="page-sub" id="index-sub"></p>
+    </div>
+    <div class="filters">
+      <span class="filter on" data-f="all">全部</span>
+      <span class="filter" data-f="companion">陪伴中</span>
+      <span class="filter" data-f="deciding">犹豫中</span>
+      <span class="filter" data-f="passed">没有买</span>
+      <span class="filter" data-f="idle">闲置</span>
+      <span class="filter" data-f="ended">告别</span>
+    </div>
+    <div id="index-list"></div>
+  </div>
+
+  <div class="screen" id="screen-me">
+    <div class="header">
+      <div style="display: flex; align-items: center; gap: 18px;" id="me-head">
+        <div id="me-avatar-box" style="margin-left: -1px;">
+          <img class="avatar" id="me-avatar" alt="" onclick="document.getElementById('me-photo').click()">
+          <div class="avatar-ph" id="me-avatar-ph" onclick="document.getElementById('me-photo').click()">添加<br>照片</div>
+          <input type="file" accept="image/*" id="me-photo" style="display:none" onchange="setAvatar()">
+        </div>
+        <div style="flex: 1;">
+          <input class="me-name" id="me-name" placeholder="写下你的名字" onchange="saveName()">
+          <p class="page-sub" id="me-sub" style="margin-top: 13px;">这本日记的主人</p>
+        </div>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-row"><span>回访提醒</span><span>每周至多一条</span></div>
+      <div class="settings-row"><span>iCloud 同步</span><span>已开启</span></div>
+      <div class="settings-row"><span>导出全部记录</span><span></span></div>
+      <div class="settings-row"><span>关于</span><span></span></div>
+    </div>
+    <p class="empty-note">这本日记属于你自己。<br>没有会员，没有推送轰炸，没有统计报表。</p>
+  </div>
+
+  <div class="screen" id="screen-detail">
+    <p class="back" onclick="closeDetail()">‹ 返回</p>
+    <p class="bio-name" id="d-name"></p>
+    <p class="bio-state" id="d-state"></p>
+    <div id="d-entries"></div>
+    <div class="detail-actions" id="d-actions"></div>
+    <div class="compose" id="d-compose">
+      <textarea class="create-area" id="d-compose-text"></textarea>
+      <p class="photo-line" onclick="document.getElementById('d-photo').click()"><span id="d-photo-label">添加一张图（可不填）</span> <span id="d-photo-name"></span></p>
+      <input type="file" accept="image/*" id="d-photo" style="display:none" onchange="pickPhoto('d')">
+      <img class="photo-preview" id="d-photo-preview" alt="">
+      <p class="compose-hint" id="d-compose-hint"></p>
+      <div class="create-actions">
+        <button class="btn" onclick="saveCompose()">记下</button>
+        <button class="btn ghost" onclick="hideCompose()">返回</button>
+      </div>
+    </div>
+    <details class="meta" id="d-meta">
+      <summary>记录信息</summary>
+      <div id="d-meta-rows"></div>
+      <p class="del-link" id="d-del-link" onclick="toggleDelMode()">删除记录</p>
+      <p class="del-hint" id="d-del-hint" style="display:none">点条目右侧的 × 删除单条，删除不可恢复。全部删完后，再点一次"删除记录"即可删除整个物品。<span class="del-done" onclick="exitDelMode()">完成</span></p>
+    </details>
+  </div>
+
+  <div class="screen" id="screen-create">
+    <p class="back" onclick="cancelCreate()">‹ 先放着</p>
+    <div id="cstep1">
+      <p class="create-q">你在想什么？</p>
+      <input class="create-input" id="c-name" placeholder="它的名字，比如：一台咖啡机">
+      <div class="create-actions"><button class="btn" onclick="createNext()">下一步</button></div>
+    </div>
+    <div id="cstep2" style="display:none">
+      <p class="create-q">为什么想要它？</p>
+      <textarea class="create-area" id="c-why" placeholder="想到什么写什么。给几个月后的自己留一句话就够。"></textarea>
+      <p class="photo-line" onclick="document.getElementById('c-photo').click()">添加一张图（可不填） <span id="c-photo-name"></span></p>
+      <input type="file" accept="image/*" id="c-photo" style="display:none" onchange="pickPhoto('c')">
+      <img class="photo-preview" id="c-photo-preview" alt="">
+      <input class="create-input" id="c-price" placeholder="价格（可不填）">
+      <input class="create-input" id="c-cat" placeholder="分类，比如：数码（可不填）">
+      <div class="create-actions"><button class="btn" onclick="saveCreate()">记下</button></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="overlay" id="ritual" onclick="hideRitual()">
+  <div style="text-align: center;">
+    <div class="ritual-card">
+      <p class="r-label" id="ritual-label">决策日记</p>
+      <p class="r-name" id="ritual-name"></p>
+      <p class="r-text" id="ritual-text"></p>
+      <p class="r-date" id="ritual-date"></p>
+    </div>
+    <p class="small">轻触任意处继续</p>
+  </div>
+</div>
+
+<div class="tabbar" id="tabbar">
+  <div class="tabbar-inner">
+    <span class="tab on" data-t="timeline">时间线</span>
+    <span class="tab" data-t="index">索引</span>
+    <span class="tab" data-t="me">我的</span>
+  </div>
+</div>
+
+<script>
+const items = {
+  camera: {
+    name: "Sony A7C II 相机", cat: "数码", status: "deciding",
+    state: "犹豫中 · 第 23 天", time: "第 23 天", month: "七月",
+    quote: "「想要一台能随身带出门的相机，但不确定会不会吃灰。」",
+    sub: "记于 · 六月二十四日",
+    entries: [
+      { date: "六月二十四日", kind: "起点", text: "想要一台能随身带出门的相机。手机拍不出那种氛围感。但上一台微单最后是在防潮箱里度过的，我不确定这次会不会不一样。" },
+      { date: "七月八日", kind: "追记", text: "这两周周末都翻了摄影的东西，好像不只是三分钟热度。但也可能只是因为我在考虑买它，才格外关注。再等等。" }
+    ],
+    meta: [["关注价格", "¥15,999"], ["记录日期", "2026 年 6 月 24 日"]]
+  },
+  kindle: {
+    name: "Kindle 阅读器", cat: "数码", status: "deciding",
+    state: "犹豫中 · 第 6 天", time: "第 6 天", month: "七月",
+    quote: "「手机上读不进书，也许换个设备能好一点？」",
+    sub: "记于 · 七月十一日",
+    entries: [
+      { date: "七月十一日", kind: "起点", text: "手机上读不进书，总是滑向别的 App。也许一个只能看书的设备能好一点？但也可能问题不在设备，在我。" }
+    ],
+    meta: [["关注价格", "¥1,299"], ["记录日期", "2026 年 7 月 11 日"]]
+  },
+  headphone: {
+    name: "降噪耳机", cat: "数码", status: "companion",
+    state: "陪伴你 · 三个月", time: "三个月", month: "四月",
+    quote: "「通勤的一小时里，想有一点自己的空间。」",
+    sub: "上次回访 · 三个月前",
+    entries: [
+      { date: "四月十二日", kind: "起点", text: "通勤的一小时里，想有一点自己的空间。地铁的噪音让我每天到公司就已经很累了。" },
+      { date: "四月二十日", kind: "决定购买", text: "试戴了朋友的，降噪效果比想象中好。犹豫的八天里每天通勤都在想它，应该不是冲动。" }
+    ],
+    meta: [["购入价格", "¥1,899"], ["购入日期", "2026 年 4 月 20 日"]]
+  },
+  macbook: {
+    name: "MacBook Air", cat: "数码", status: "companion",
+    state: "陪伴你 · 两年一个月", time: "两年一个月", month: "更早",
+    quote: "「想要一台随时能开始工作的轻薄电脑。」",
+    sub: "上次回访 · 上个月",
+    entries: [
+      { date: "2024 年 6 月", kind: "起点", text: "想要一台随时能开始工作的轻薄电脑，旧的那台开机要两分钟。" },
+      { date: "2025 年 6 月", kind: "一周年回访", text: "一年了，几乎每天都用。是这几年买得最值的东西。" },
+      { date: "2026 年 6 月", kind: "两周年回访", text: "两年了依然流畅。当时纠结要不要上 Pro，现在看 Air 完全够。" }
+    ],
+    meta: [["购入价格", "¥8,999"], ["购入日期", "2024 年 6 月 15 日"]]
+  },
+  toothbrush: {
+    name: "电动牙刷", cat: "数码", status: "companion",
+    state: "陪伴你 · 一年半", time: "一年半", month: "更早",
+    quote: "「牙医说我刷牙太用力了。」",
+    sub: "上次回访 · 十个月前",
+    entries: [
+      { date: "2025 年 1 月", kind: "起点", text: "牙医说我刷牙太用力了，建议换电动的。" }
+    ],
+    meta: [["购入价格", "¥399"], ["购入日期", "2025 年 1 月 20 日"]]
+  },
+  lamp: {
+    name: "落地灯", cat: "家居", status: "companion",
+    state: "陪伴你 · 一年两个月", time: "一年两个月", month: "更早",
+    quote: "「晚上客厅的顶灯太亮太冷了。」",
+    sub: "上次回访 · 两个月前",
+    entries: [
+      { date: "2025 年 5 月", kind: "起点", text: "晚上客厅的顶灯太亮太冷了，想要一盏能让房间安静下来的灯。" },
+      { date: "2026 年 5 月", kind: "一周年回访", text: "每天晚上都开。它改变了整个客厅的气质，这钱花得清楚。" }
+    ],
+    meta: [["购入价格", "¥1,280"], ["购入日期", "2025 年 5 月 3 日"]]
+  },
+  blanket: {
+    name: "羊毛毯", cat: "家居", status: "companion",
+    state: "陪伴你 · 八个月", time: "八个月", month: "更早",
+    quote: "「冬天在沙发上看书总是冷。」",
+    sub: "上次回访 · 半年前",
+    entries: [
+      { date: "2025 年 11 月", kind: "起点", text: "冬天在沙发上看书总是冷，开空调又太干。" }
+    ],
+    meta: [["购入价格", "¥459"], ["购入日期", "2025 年 11 月 8 日"]]
+  },
+  chair: {
+    name: "人体工学椅", cat: "家居", status: "passed",
+    state: "想清楚了，没有买", time: "六月", month: "六月",
+    quote: "「我需要的其实是常站起来活动，不是一把更贵的椅子。」",
+    sub: "想清楚于 · 六月",
+    entries: [
+      { date: "五月十日", kind: "起点", text: "腰又开始疼了，想换一把好椅子。同事那把四千多的看起来很舒服。" },
+      { date: "六月二日", kind: "追记", text: "查了很多测评，价格从一千到八千都有。但今天久坐提醒响的时候我突然想到：我上一次站起来活动是三小时前。" },
+      { date: "六月二十六日", kind: "决定不买", text: "想清楚了。我需要的其实是常站起来活动，不是一把更贵的椅子。先把站立提醒用起来，半年后如果腰还疼，再回来考虑它。" }
+    ],
+    meta: [["关注价格", "¥4,200"], ["记录日期", "2026 年 5 月 10 日"]]
+  },
+  shoes: {
+    name: "跑步鞋", cat: "运动", status: "companion",
+    state: "陪伴你 · 一个月", time: "一个月", month: "六月",
+    quote: "「不想再因为膝盖疼中断晨跑了。」",
+    sub: "刚开始陪伴你",
+    entries: [
+      { date: "六月五日", kind: "起点", text: "不想再因为膝盖疼中断晨跑了。旧鞋已经跑了八百多公里。" },
+      { date: "六月十四日", kind: "决定购买", text: "去店里试了三双，选了缓震最好的。这次不是想要新东西，是真的需要。" }
+    ],
+    meta: [["购入价格", "¥899"], ["购入日期", "2026 年 6 月 14 日"]]
+  },
+  yoga: {
+    name: "瑜伽垫", cat: "运动", status: "shelved",
+    state: "搁置了", time: "搁置了", month: "更早",
+    quote: "「想在家跟着视频练一练。」",
+    sub: "很久没有想起它了",
+    entries: [
+      { date: "2025 年 9 月", kind: "起点", text: "想在家跟着视频练一练，久坐的身体需要舒展。" }
+    ],
+    meta: [["关注价格", "¥199"], ["记录日期", "2025 年 9 月 2 日"]]
+  }
+};
+
+const monthOrder = ["七月", "六月", "更早"];
+const catOrder = ["数码", "家居", "运动"];
+const statusNames = { companion: "陪伴中", deciding: "犹豫中", passed: "没有买", shelved: "搁置" };
+
+function renderTimeline() {
+  const el = document.getElementById("timeline-list");
+  let html = "";
+  monthOrder.forEach(m => {
+    const group = Object.entries(items).filter(([k, v]) => v.month === m && v.status !== "shelved");
+    if (!group.length) return;
+    html += `<p class="month">${m}</p>`;
+    group.forEach(([k, v]) => {
+      const imgs = v.entries.filter(e => e.img);
+      const thumb = imgs.length ? `<img class="card-thumb" src="${imgs[imgs.length - 1].img}">` : "";
+      html += `<div class="card" onclick="openDetail('${k}')">
+        <div class="card-row"><div>
+          <p class="name">${v.name}</p>
+          <p class="state">${v.state}</p>
+        </div>${thumb}</div>
+        ${v.quote ? `<p class="quote">${v.quote}</p>` : ""}
+      </div>`;
+    });
+  });
+  el.innerHTML = html;
+}
+
+let currentFilter = "all";
+function renderIndex() {
+  const el = document.getElementById("index-list");
+  const sub = document.getElementById("index-sub");
+  const keys = Object.keys(items).filter(k => currentFilter === "all" || items[k].status === currentFilter);
+  if (currentFilter === "all") sub.textContent = `你认真想过 ${keys.length} 件东西`;
+  else if (currentFilter === "companion") sub.textContent = `${keys.length} 件东西正陪伴着你`;
+  else if (currentFilter === "deciding") sub.textContent = `你正在考虑 ${keys.length} 件东西`;
+  else if (currentFilter === "idle") sub.textContent = `${keys.length} 件东西正在闲置`;
+  else if (currentFilter === "ended") sub.textContent = `你与 ${keys.length} 件东西告别了`;
+  else sub.textContent = `你想清楚后放下了 ${keys.length} 件东西`;
+  let html = "";
+  catOrder.forEach(c => {
+    const group = keys.filter(k => items[k].cat === c);
+    if (!group.length) return;
+    html += `<p class="cat">${c} · ${group.length}</p>`;
+    group.forEach(k => {
+      const v = items[k];
+      const right = currentFilter === "all" ? v.state : v.time;
+      html += `<div class="row" onclick="openDetail('${k}')">
+        <div class="row-top"><span class="name">${v.name}</span><span class="time">${right}</span></div>
+        <p class="sub">${v.sub}</p>
+      </div>`;
+    });
+  });
+  el.innerHTML = html || `<p class="empty-note">这一页还是空白。</p>`;
+}
+
+let lastScreen = "timeline";
+let currentKey = null;
+function openDetail(key) {
+  currentKey = key;
+  const v = items[key];
+  document.getElementById("d-name").textContent = v.name;
+  document.getElementById("d-state").textContent = v.state;
+  renderEntries(v);
+  document.getElementById("d-meta-rows").innerHTML = v.meta.map(m =>
+    `<div class="mrow"><span>${m[0]}</span><span>${m[1]}</span></div>`
+  ).join("");
+  document.getElementById("d-meta").removeAttribute("open");
+  renderActions(v);
+  hideCompose();
+  delMode = false;
+  document.getElementById("d-del-hint").style.display = "none";
+  lastScreen = document.querySelector(".screen.active").id.replace("screen-", "");
+  if (lastScreen === "detail" || lastScreen === "create") lastScreen = "timeline";
+  showScreen("detail");
+  document.getElementById("tabbar").style.display = "none";
+  window.scrollTo(0, 0);
+}
+function closeDetail() {
+  showScreen(lastScreen);
+  document.getElementById("tabbar").style.display = "";
+}
+function showScreen(name) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("screen-" + name).classList.add("active");
+}
+
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.remove("on"));
+  t.classList.add("on");
+  showScreen(t.dataset.t);
+  window.scrollTo(0, 0);
+}));
+
+document.querySelectorAll(".filter").forEach(f => f.addEventListener("click", () => {
+  document.querySelectorAll(".filter").forEach(x => x.classList.remove("on"));
+  f.classList.add("on");
+  currentFilter = f.dataset.f;
+  renderIndex();
+}));
+
+const now = new Date();
+const cn = ["一","二","三","四","五","六","七","八","九","十","十一","十二"];
+function cnDay(d) {
+  if (d <= 10) return ["一","二","三","四","五","六","七","八","九","十"][d-1];
+  if (d < 20) return "十" + (d === 10 ? "" : cn[d-11]);
+  if (d === 20) return "二十";
+  if (d < 30) return "二十" + cn[d-21];
+  if (d === 30) return "三十";
+  return "三十" + cn[d-31];
+}
+const todayCn = cn[now.getMonth()] + "月" + cnDay(now.getDate()) + "日";
+document.getElementById("today-date").textContent = todayCn;
+
+let firstRecordDone = false;
+let composeMode = null;
+const picked = { c: null, d: null };
+
+function fileToData(file, max, cb) {
+  const img = new Image();
+  img.onload = () => {
+    const s = Math.min(1, max / Math.max(img.width, img.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.width * s);
+    c.height = Math.round(img.height * s);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(img.src);
+    cb(c.toDataURL("image/jpeg", 0.72));
+  };
+  img.src = URL.createObjectURL(file);
+}
+function pickPhoto(w) {
+  const inp = document.getElementById(w + "-photo");
+  const nameEl = document.getElementById(w + "-photo-name");
+  const prev = document.getElementById(w + "-photo-preview");
+  if (!inp.files[0]) {
+    picked[w] = null;
+    nameEl.textContent = "";
+    prev.style.display = "none";
+    return;
+  }
+  fileToData(inp.files[0], 900, data => {
+    picked[w] = data;
+    nameEl.textContent = "· 已选好";
+    nameEl.className = "picked";
+    prev.src = data;
+    prev.style.display = "block";
+  });
+}
+function resetPhoto(w) {
+  picked[w] = null;
+  document.getElementById(w + "-photo").value = "";
+  document.getElementById(w + "-photo-name").textContent = "";
+  document.getElementById(w + "-photo-preview").style.display = "none";
+}
+
+function openCreate() {
+  ["c-name", "c-why", "c-price", "c-cat"].forEach(id => document.getElementById(id).value = "");
+  resetPhoto("c");
+  document.getElementById("cstep1").style.display = "";
+  document.getElementById("cstep2").style.display = "none";
+  lastScreen = document.querySelector(".screen.active").id.replace("screen-", "");
+  if (lastScreen === "detail" || lastScreen === "create") lastScreen = "timeline";
+  showScreen("create");
+  document.getElementById("tabbar").style.display = "none";
+  window.scrollTo(0, 0);
+}
+function cancelCreate() {
+  showScreen(lastScreen);
+  document.getElementById("tabbar").style.display = "";
+}
+function createNext() {
+  if (!document.getElementById("c-name").value.trim()) return;
+  document.getElementById("cstep1").style.display = "none";
+  document.getElementById("cstep2").style.display = "";
+}
+function saveCreate() {
+  const name = document.getElementById("c-name").value.trim();
+  const why = document.getElementById("c-why").value.trim() || "还没想好怎么说。";
+  const price = document.getElementById("c-price").value.trim();
+  const cat = document.getElementById("c-cat").value.trim() || "未分类";
+  if (!catOrder.includes(cat)) catOrder.push(cat);
+  const meta = [["记录日期", todayCn]];
+  if (price) meta.unshift(["关注价格", price]);
+  const key = "u" + Date.now();
+  items[key] = {
+    name, cat, status: "deciding",
+    state: "犹豫中 · 第 1 天", time: "第 1 天", month: monthOrder[0],
+    quote: "「" + why.split(/[。？！\n]/)[0] + "。」",
+    sub: "记于 · " + todayCn,
+    entries: [{ date: todayCn, kind: "起点", text: why, img: picked.c || undefined }],
+    meta
+  };
+  renderTimeline(); renderIndex();
+  persist();
+  cancelCreate();
+  if (!firstRecordDone) {
+    firstRecordDone = true;
+    persist();
+    showRitual("这是你的第一条决策记录。慢慢来。", "第一条记录", name);
+  }
+}
+
+const profile = { name: "", avatar: null };
+
+function applyProfile() {
+  document.getElementById("me-name").value = profile.name;
+  if (profile.avatar) {
+    const img = document.getElementById("me-avatar");
+    img.src = profile.avatar;
+    img.style.display = "block";
+    document.getElementById("me-avatar-ph").style.display = "none";
+  }
+}
+function setAvatar() {
+  const inp = document.getElementById("me-photo");
+  if (!inp.files[0]) return;
+  fileToData(inp.files[0], 256, data => {
+    profile.avatar = data;
+    applyProfile();
+    persist();
+  });
+}
+function saveName() {
+  profile.name = document.getElementById("me-name").value.trim();
+  applyProfile();
+  persist();
+}
+
+function persist() {
+  try {
+    localStorage.setItem("dj-v1", JSON.stringify({ items, catOrder, firstRecordDone, profile }));
+  } catch (e) {
+    console.warn("存储失败，可能空间不足", e);
+  }
+}
+function restore() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem("dj-v1") || "null"); } catch (e) {}
+  if (!saved) return;
+  Object.keys(items).forEach(k => delete items[k]);
+  Object.assign(items, saved.items);
+  catOrder.length = 0;
+  saved.catOrder.forEach(c => catOrder.push(c));
+  firstRecordDone = !!saved.firstRecordDone;
+  Object.assign(profile, saved.profile);
+}
+
+let delMode = false;
+
+function renderEntries(v) {
+  document.getElementById("d-entries").innerHTML = v.entries.map((e, i) =>
+    `<div class="entry"><div class="e-head"><span class="date">${e.date}</span><span class="kind">${e.kind}</span>${delMode ? `<span class="e-del" onclick="delEntry(${i})">×</span>` : ""}</div>${e.text ? `<p class="text">${e.text}</p>` : ""}${e.img ? `<img src="${e.img}">` : ""}</div>`
+  ).join("");
+}
+
+function delEntry(i) {
+  const v = items[currentKey];
+  const kind = v.entries[i].kind;
+  v.entries.splice(i, 1);
+  if (i === 0 && v.entries.length) {
+    const f = v.entries[0];
+    v.quote = f.text ? "「" + f.text.split(/[。？！\n]/)[0] + "。」" : "";
+  }
+  if (kind === "决定购买" || kind === "决定不买") {
+    v.status = "deciding";
+    v.state = "犹豫中";
+    v.time = "犹豫中";
+    v.sub = "记于 · " + (v.entries[0] ? v.entries[0].date : "");
+  }
+  if (kind === "闲置" || kind === "告别") {
+    v.status = "companion";
+    v.state = "陪伴你";
+    v.time = "陪伴中";
+  }
+  document.getElementById("d-state").textContent = v.state;
+  renderActions(v);
+  renderEntries(v);
+  renderTimeline(); renderIndex();
+  persist();
+}
+
+function toggleDelMode() {
+  const v = items[currentKey];
+  if (delMode && v.entries.length === 0) {
+    delete items[currentKey];
+    renderTimeline(); renderIndex();
+    persist();
+    delMode = false;
+    closeDetail();
+    return;
+  }
+  delMode = !delMode;
+  document.getElementById("d-del-hint").style.display = delMode ? "block" : "none";
+  renderEntries(v);
+}
+function exitDelMode() {
+  delMode = false;
+  document.getElementById("d-del-hint").style.display = "none";
+  renderEntries(items[currentKey]);
+}
+
+function showRitual(text, label, name) {
+  document.getElementById("ritual-label").textContent = label || "决策日记";
+  document.getElementById("ritual-name").textContent = name || "";
+  document.getElementById("ritual-text").textContent = text;
+  document.getElementById("ritual-date").textContent = "记于 " + todayCn;
+  document.getElementById("ritual").classList.add("show");
+}
+function hideRitual() {
+  document.getElementById("ritual").classList.remove("show");
+}
+
+function renderActions(v) {
+  const el = document.getElementById("d-actions");
+  if (v.status === "deciding") {
+    el.innerHTML = `<button class="btn" onclick="startCompose('buy')">带它回家</button>
+      <button class="btn ghost" onclick="startCompose('pass')">想清楚了，不买</button>
+      <button class="btn ghost" onclick="startCompose('note')">追记</button>`;
+  } else if (v.status === "companion") {
+    el.innerHTML = `<button class="btn" onclick="startCompose('review')">写回访</button>
+      <button class="btn ghost" onclick="startCompose('idle')">闲置了</button>
+      <button class="btn ghost" onclick="startCompose('bye')">告别</button>`;
+  } else if (v.status === "idle") {
+    el.innerHTML = `<button class="btn" onclick="startCompose('revive')">又用起来了</button>
+      <button class="btn ghost" onclick="startCompose('bye')">告别</button>`;
+  } else {
+    el.innerHTML = "";
+  }
+  el.style.display = "flex";
+}
+function startCompose(mode) {
+  composeMode = mode;
+  const ph = {
+    buy: "为什么决定买？给未来的自己留一句。",
+    pass: "为什么不买了？写下来，它值得被记住。",
+    review: "它最近怎么样？",
+    note: "补充一点现在的想法。",
+    idle: "怎么闲置了？对自己说实话。",
+    revive: "它回到你的生活里了？",
+    bye: "怎么告别的？卖掉、送人，还是用坏了。"
+  };
+  const t = document.getElementById("d-compose-text");
+  t.value = "";
+  t.placeholder = ph[mode];
+  resetPhoto("d");
+  document.getElementById("d-compose-hint").style.display = "none";
+  document.getElementById("d-photo-label").textContent = mode === "review" ? "拍一张它现在的样子" : "添加一张图（可不填）";
+  document.getElementById("d-compose").style.display = "block";
+  document.getElementById("d-actions").style.display = "none";
+  t.focus();
+}
+function hideCompose() {
+  document.getElementById("d-compose").style.display = "none";
+  document.getElementById("d-actions").style.display = "flex";
+}
+function saveCompose() {
+  const v = items[currentKey];
+  const text = document.getElementById("d-compose-text").value.trim();
+  const hint = document.getElementById("d-compose-hint");
+  if (!text && !picked.d) {
+    hint.textContent = "写一句，或加一张照片。";
+    hint.style.display = "block";
+    return;
+  }
+  if (!text && ["buy", "pass", "idle", "bye"].includes(composeMode)) {
+    hint.textContent = "这个决定值得写一句话。";
+    hint.style.display = "block";
+    return;
+  }
+  hint.style.display = "none";
+  const days = (v.state.match(/第 (\d+) 天/) || [])[1];
+  if (composeMode === "buy") {
+    v.entries.push({ date: todayCn, kind: "决定购买", text, img: picked.d || undefined });
+    v.status = "companion"; v.state = "陪伴你 · 刚开始"; v.time = "刚开始"; v.sub = "刚开始陪伴你";
+    showRitual(days ? `犹豫了 ${days} 天，你决定带它回家。` : "你想清楚了，决定带它回家。", "决定购买", v.name);
+  } else if (composeMode === "pass") {
+    v.entries.push({ date: todayCn, kind: "决定不买", text, img: picked.d || undefined });
+    v.status = "passed"; v.state = "想清楚了，没有买"; v.time = monthOrder[0]; v.sub = "想清楚于 · " + monthOrder[0];
+    showRitual(days ? `这个念头陪了你 ${days} 天，你想清楚了。` : "你想清楚了，放下了它。", "决定不买", v.name);
+  } else if (composeMode === "review") {
+    v.entries.push({ date: todayCn, kind: "回访", text, img: picked.d || undefined });
+    v.sub = "上次回访 · 刚刚";
+  } else if (composeMode === "idle") {
+    v.entries.push({ date: todayCn, kind: "闲置", text, img: picked.d || undefined });
+    v.status = "idle"; v.state = "闲置了"; v.time = monthOrder[0]; v.sub = "闲置于 · " + monthOrder[0];
+  } else if (composeMode === "revive") {
+    v.entries.push({ date: todayCn, kind: "回访", text, img: picked.d || undefined });
+    v.status = "companion"; v.state = "陪伴你 · 又开始了"; v.time = "又开始了"; v.sub = "上次回访 · 刚刚";
+  } else if (composeMode === "bye") {
+    v.entries.push({ date: todayCn, kind: "告别", text, img: picked.d || undefined });
+    v.status = "ended"; v.state = "告别了 · " + monthOrder[0]; v.time = monthOrder[0]; v.sub = "告别于 · " + monthOrder[0];
+    showRitual("它陪伴过你的日子，都记在这里了。", "告别", v.name);
+  } else {
+    v.entries.push({ date: todayCn, kind: "追记", text, img: picked.d || undefined });
+  }
+  renderTimeline(); renderIndex();
+  persist();
+  openDetail(currentKey);
+}
+
+restore();
+applyProfile();
+renderTimeline();
+renderIndex();
+</script>
+</body>
+</html>
