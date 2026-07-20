@@ -7,6 +7,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="决策日记">
 <meta name="theme-color" content="#FAF8F3">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <link rel="apple-touch-icon" href="icon.png">
 <meta name="description" content="购买前想清楚，购买后长期验证。一本安静的决策日记。">
 <title>决策日记</title>
@@ -97,6 +100,23 @@
   .photo-line { margin-top: 16px; font-size: 12.5px; color: var(--gray-light); cursor: pointer; }
   .photo-line .picked { color: var(--ink-soft); }
   .entry img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; margin-top: 12px; display: block; }
+  .cal-wrap { margin-top: 20px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 14px 14px; }
+  .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .cal-title { font-family: var(--serif); font-size: 15px; color: var(--ink); letter-spacing: 1px; }
+  .cal-arrow { font-size: 18px; color: var(--gray); cursor: pointer; padding: 4px 10px; user-select: none; }
+  .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; color: var(--gray-mute); letter-spacing: 1px; margin-bottom: 6px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 2px 0; }
+  .cal-cell { font-size: 13.5px; color: var(--ink-soft); padding: 8px 0; cursor: pointer; border-radius: 50%; transition: background .15s; line-height: 1; }
+  .cal-cell:active { background: var(--line); }
+  .cal-cell.empty { cursor: default; }
+  .cal-cell.today { color: var(--ink); font-weight: 600; }
+  .cal-cell.selected { background: var(--ink); color: var(--paper); font-weight: 500; }
+  .cal-cell.other { color: var(--gray-faint); }
+  .cal-manual { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line-faint); }
+  .cal-input { width: 48px; background: transparent; border: none; border-bottom: 1px solid var(--line); font-family: var(--sans); font-size: 13px; color: var(--ink); text-align: center; padding: 4px 0; outline: none; }
+  .cal-input-sm { width: 36px; }
+  .cal-sep { font-size: 12px; color: var(--gray-mute); }
+  .cal-go { font-size: 12px; color: var(--ink-soft); cursor: pointer; margin-left: 6px; border-bottom: 1px solid var(--line); padding-bottom: 1px; }
   .card-row { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
   .card-thumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--line); }
   .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 1px solid var(--line); display: none; cursor: pointer; }
@@ -200,6 +220,26 @@
       <p class="photo-line" onclick="document.getElementById('c-photo').click()">添加一张图（可不填） <span id="c-photo-name"></span></p>
       <input type="file" accept="image/*" id="c-photo" style="display:none" onchange="pickPhoto('c')">
       <img class="photo-preview" id="c-photo-preview" alt="">
+      <div class="cal-wrap" id="c-cal-wrap">
+        <div class="cal-manual">
+          <input class="cal-input" id="cal-y" type="number" placeholder="年" min="2020" max="2030">
+          <span class="cal-sep">年</span>
+          <input class="cal-input" id="cal-m" type="number" placeholder="月" min="1" max="12">
+          <span class="cal-sep">月</span>
+          <input class="cal-input cal-input-sm" id="cal-d" type="number" placeholder="日" min="1" max="31">
+          <span class="cal-sep">日</span>
+          <span class="cal-go" onclick="calManualGo()">跳转</span>
+        </div>
+        <div class="cal-head">
+          <span class="cal-arrow" onclick="calNav(-1)">‹</span>
+          <span class="cal-title" id="cal-title"></span>
+          <span class="cal-arrow" onclick="calNav(1)">›</span>
+        </div>
+        <div class="cal-weekdays">
+          <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
       <input class="create-input" id="c-price" placeholder="价格（可不填）">
       <input class="create-input" id="c-cat" placeholder="分类，比如：数码（可不填）">
       <div class="create-actions"><button class="btn" onclick="saveCreate()">记下</button></div>
@@ -496,6 +536,7 @@ function resetPhoto(w) {
 
 function openCreate() {
   ["c-name", "c-why", "c-price", "c-cat"].forEach(id => document.getElementById(id).value = "");
+  calReset();
   resetPhoto("c");
   document.getElementById("cstep1").style.display = "";
   document.getElementById("cstep2").style.display = "none";
@@ -514,21 +555,33 @@ function createNext() {
   document.getElementById("cstep1").style.display = "none";
   document.getElementById("cstep2").style.display = "";
 }
+function dateToCn(dateStr) {
+  const dt = new Date(dateStr + "T00:00:00");
+  return cn[dt.getMonth()] + "月" + cnDay(dt.getDate()) + "日";
+}
+function daysDiff(dateStr) {
+  const dt = new Date(dateStr + "T00:00:00");
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.max(1, Math.round((today - dt) / 86400000) + 1);
+}
 function saveCreate() {
   const name = document.getElementById("c-name").value.trim();
   const why = document.getElementById("c-why").value.trim() || "还没想好怎么说。";
   const price = document.getElementById("c-price").value.trim();
   const cat = document.getElementById("c-cat").value.trim() || "未分类";
+  const dateVal = calSelected;
+  const dateCn = dateVal ? dateToCn(dateVal) : todayCn;
+  const days = dateVal ? daysDiff(dateVal) : 1;
   if (!catOrder.includes(cat)) catOrder.push(cat);
-  const meta = [["记录日期", todayCn]];
+  const meta = [["记录日期", dateCn]];
   if (price) meta.unshift(["关注价格", price]);
   const key = "u" + Date.now();
   items[key] = {
     name, cat, status: "deciding",
-    state: "犹豫中 · 第 1 天", time: "第 1 天", month: monthOrder[0],
+    state: "犹豫中 · 第 " + days + " 天", time: "第 " + days + " 天", month: monthOrder[0],
     quote: "「" + why.split(/[。？！\n]/)[0] + "。」",
-    sub: "记于 · " + todayCn,
-    entries: [{ date: todayCn, kind: "起点", text: why, img: picked.c || undefined }],
+    sub: "记于 · " + dateCn,
+    entries: [{ date: dateCn, kind: "起点", text: why, img: picked.c || undefined }],
     meta
   };
   renderTimeline(); renderIndex();
@@ -737,6 +790,69 @@ function saveCompose() {
   renderTimeline(); renderIndex();
   persist();
   openDetail(currentKey);
+}
+
+/* ── Calendar ── */
+let calYear = now.getFullYear(), calMonth = now.getMonth(), calSelected = null;
+
+function renderCal() {
+  const title = document.getElementById("cal-title");
+  title.textContent = calYear + " 年 " + cn[calMonth] + "月";
+  const grid = document.getElementById("cal-grid");
+  const first = new Date(calYear, calMonth, 1).getDay();
+  const days = new Date(calYear, calMonth + 1, 0).getDate();
+  let html = "";
+  for (let i = 0; i < first; i++) html += `<span class="cal-cell empty"></span>`;
+  for (let d = 1; d <= days; d++) {
+    const iso = calYear + "-" + String(calMonth + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+    const isToday = d === now.getDate() && calMonth === now.getMonth() && calYear === now.getFullYear();
+    const isSel = calSelected === iso;
+    const cls = ["cal-cell"];
+    if (isToday) cls.push("today");
+    if (isSel) cls.push("selected");
+    html += `<span class="${cls.join(" ")}" onclick="calPick('${iso}')">${d}</span>`;
+  }
+  grid.innerHTML = html;
+  document.getElementById("cal-y").value = calYear;
+  document.getElementById("cal-m").value = calMonth + 1;
+  document.getElementById("cal-d").value = calSelected ? parseInt(calSelected.split("-")[2]) : "";
+}
+
+function calPick(iso) {
+  calSelected = iso;
+  const parts = iso.split("-");
+  calYear = parseInt(parts[0]);
+  calMonth = parseInt(parts[1]) - 1;
+  renderCal();
+}
+
+function calNav(dir) {
+  calMonth += dir;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCal();
+}
+
+function calManualGo() {
+  const y = parseInt(document.getElementById("cal-y").value);
+  const m = parseInt(document.getElementById("cal-m").value);
+  const d = parseInt(document.getElementById("cal-d").value);
+  if (y && m >= 1 && m <= 12) {
+    calYear = y;
+    calMonth = m - 1;
+    if (d >= 1 && d <= new Date(y, m, 0).getDate()) {
+      calSelected = y + "-" + String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+    }
+    renderCal();
+  }
+}
+
+function calReset() {
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+  const td = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+  calSelected = td;
+  renderCal();
 }
 
 restore();
