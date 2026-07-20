@@ -193,6 +193,8 @@
       <p class="photo-line" onclick="document.getElementById('d-photo').click()"><span id="d-photo-label">添加一张图（可不填）</span> <span id="d-photo-name"></span></p>
       <input type="file" accept="image/*" id="d-photo" style="display:none" onchange="pickPhoto('d')">
       <img class="photo-preview" id="d-photo-preview" alt="">
+      <p class="photo-line" id="d-date-line" onclick="toggleComposeCal()">记录时间 · 今天</p>
+      <div id="d-cal-slot"></div>
       <p class="compose-hint" id="d-compose-hint"></p>
       <div class="create-actions">
         <button class="btn" onclick="saveCompose()">记下</button>
@@ -220,6 +222,7 @@
       <p class="photo-line" onclick="document.getElementById('c-photo').click()">添加一张图（可不填） <span id="c-photo-name"></span></p>
       <input type="file" accept="image/*" id="c-photo" style="display:none" onchange="pickPhoto('c')">
       <img class="photo-preview" id="c-photo-preview" alt="">
+      <div id="c-cal-slot"></div>
       <div class="cal-wrap" id="c-cal-wrap">
         <div class="cal-manual">
           <input class="cal-input" id="cal-y" type="number" placeholder="年" min="2020" max="2030">
@@ -538,6 +541,10 @@ function openCreate() {
   ["c-name", "c-why", "c-price", "c-cat"].forEach(id => document.getElementById(id).value = "");
   calReset();
   resetPhoto("c");
+  document.getElementById("c-cal-slot").appendChild(document.getElementById("c-cal-wrap"));
+  document.getElementById("c-cal-wrap").style.display = "";
+  calSelected = null;
+  renderCal();
   document.getElementById("cstep1").style.display = "";
   document.getElementById("cstep2").style.display = "none";
   lastScreen = document.querySelector(".screen.active").id.replace("screen-", "");
@@ -737,6 +744,10 @@ function startCompose(mode) {
   t.value = "";
   t.placeholder = ph[mode];
   resetPhoto("d");
+  composeCalUsed = false;
+  document.getElementById("d-date-line").textContent = "记录时间 · 今天";
+  const calW = document.getElementById("c-cal-wrap");
+  if (document.getElementById("d-cal-slot").contains(calW)) calW.style.display = "none";
   document.getElementById("d-compose-hint").style.display = "none";
   document.getElementById("d-photo-label").textContent = mode === "review" ? "拍一张它现在的样子" : "添加一张图（可不填）";
   document.getElementById("d-compose").style.display = "block";
@@ -762,30 +773,34 @@ function saveCompose() {
     return;
   }
   hint.style.display = "none";
+  const entryIso = composeCalUsed && calSelected ? calSelected : null;
+  const entryDate = entryIso ? dateToCn(entryIso) : todayCn;
+  const entryTs = entryIso ? new Date(entryIso + "T12:00:00").getTime() : Date.now();
   const days = (v.state.match(/第 (\d+) 天/) || [])[1];
   if (composeMode === "buy") {
-    v.entries.push({ date: todayCn, kind: "决定购买", text, img: picked.d || undefined });
+    v.entries.push({ ts: entryTs, date: entryDate, kind: "决定购买", text, img: picked.d || undefined });
+    v.buyTs = entryTs;
     v.status = "companion"; v.state = "陪伴你 · 刚开始"; v.time = "刚开始"; v.sub = "刚开始陪伴你";
     showRitual(days ? `犹豫了 ${days} 天，你决定带它回家。` : "你想清楚了，决定带它回家。", "决定购买", v.name);
   } else if (composeMode === "pass") {
-    v.entries.push({ date: todayCn, kind: "决定不买", text, img: picked.d || undefined });
+    v.entries.push({ ts: entryTs, date: entryDate, kind: "决定不买", text, img: picked.d || undefined });
     v.status = "passed"; v.state = "想清楚了，没有买"; v.time = monthOrder[0]; v.sub = "想清楚于 · " + monthOrder[0];
     showRitual(days ? `这个念头陪了你 ${days} 天，你想清楚了。` : "你想清楚了，放下了它。", "决定不买", v.name);
   } else if (composeMode === "review") {
-    v.entries.push({ date: todayCn, kind: "回访", text, img: picked.d || undefined });
-    v.sub = "上次回访 · 刚刚";
+    v.entries.push({ ts: entryTs, date: entryDate, kind: "回访", text, img: picked.d || undefined });
+    v.sub = entryIso ? "上次回访 · " + entryDate : "上次回访 · 刚刚";
   } else if (composeMode === "idle") {
-    v.entries.push({ date: todayCn, kind: "闲置", text, img: picked.d || undefined });
+    v.entries.push({ ts: entryTs, date: entryDate, kind: "闲置", text, img: picked.d || undefined });
     v.status = "idle"; v.state = "闲置了"; v.time = monthOrder[0]; v.sub = "闲置于 · " + monthOrder[0];
   } else if (composeMode === "revive") {
-    v.entries.push({ date: todayCn, kind: "回访", text, img: picked.d || undefined });
+    v.entries.push({ ts: entryTs, date: entryDate, kind: "回访", text, img: picked.d || undefined });
     v.status = "companion"; v.state = "陪伴你 · 又开始了"; v.time = "又开始了"; v.sub = "上次回访 · 刚刚";
   } else if (composeMode === "bye") {
-    v.entries.push({ date: todayCn, kind: "告别", text, img: picked.d || undefined });
+    v.entries.push({ ts: entryTs, date: entryDate, kind: "告别", text, img: picked.d || undefined });
     v.status = "ended"; v.state = "告别了 · " + monthOrder[0]; v.time = monthOrder[0]; v.sub = "告别于 · " + monthOrder[0];
     showRitual("它陪伴过你的日子，都记在这里了。", "告别", v.name);
   } else {
-    v.entries.push({ date: todayCn, kind: "追记", text, img: picked.d || undefined });
+    v.entries.push({ ts: entryTs, date: entryDate, kind: "追记", text, img: picked.d || undefined });
   }
   renderTimeline(); renderIndex();
   persist();
@@ -824,6 +839,12 @@ function calPick(iso) {
   calYear = parseInt(parts[0]);
   calMonth = parseInt(parts[1]) - 1;
   renderCal();
+  syncComposeDateLabel();
+}
+function syncComposeDateLabel() {
+  if (calSelected && document.getElementById("d-cal-slot").contains(document.getElementById("c-cal-wrap"))) {
+    document.getElementById("d-date-line").textContent = "记录时间 · " + dateToCn(calSelected);
+  }
 }
 
 function calNav(dir) {
@@ -844,6 +865,22 @@ function calManualGo() {
       calSelected = y + "-" + String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0");
     }
     renderCal();
+    syncComposeDateLabel();
+  }
+}
+
+let composeCalUsed = false;
+function toggleComposeCal() {
+  const cal = document.getElementById("c-cal-wrap");
+  const slot = document.getElementById("d-cal-slot");
+  if (!slot.contains(cal) || cal.style.display === "none") {
+    slot.appendChild(cal);
+    cal.style.display = "";
+    composeCalUsed = true;
+    calReset();
+    syncComposeDateLabel();
+  } else {
+    cal.style.display = "none";
   }
 }
 
