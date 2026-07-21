@@ -11,6 +11,8 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="description" content="购买前想清楚，购买后长期验证。一本安静的决策日记。">
 <title>决策日记</title>
 <style>
@@ -896,6 +898,14 @@ restore();
 applyProfile();
 renderTimeline();
 renderIndex();
+
+/* PWA：注册 service worker，让它可安装到主屏、离线可用。
+   file:// 直接打开时没有 SW 环境，静默跳过，不影响本地预览。 */
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
