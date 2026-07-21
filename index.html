@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>决策日记 · 设计案例</title>
+<meta name="description" content="一款帮助用户在购买前想清楚、购买后长期验证决策的产品。记录的不是「我得到过什么」，而是「我认真想过什么」。">
+<link rel="apple-touch-icon" href="prototype/icon.png">
+<link rel="icon" href="prototype/icon.png">
+<style>
+  :root {
+    --paper: #FAF8F3;
+    --paper-2: #F4F1EA;
+    --card: #FFFFFF;
+    --ink: #2C2A26;
+    --ink-soft: #6B665C;
+    --gray: #8F897D;
+    --gray-light: #A9A49B;
+    --gray-faint: #C2BDB2;
+    --gray-mute: #B8B3A8;
+    --line: #EAE6DC;
+    --line-faint: #EFEBE2;
+    --serif: "Songti SC", "Noto Serif SC", Georgia, serif;
+    --sans: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+    --maxw: 680px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper); color: var(--ink); font-family: var(--sans);
+    line-height: 1.75; -webkit-font-smoothing: antialiased;
+    font-size: 16px;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+  /* ── 区块节奏 ── */
+  section { padding: 46px 0; border-top: 1px solid var(--line-faint); }
+  section:first-of-type { border-top: none; }
+  .label {
+    font-size: 12px; letter-spacing: 4px; color: var(--gray-mute);
+    text-transform: uppercase; margin-bottom: 20px;
+  }
+  h2 {
+    font-family: var(--serif); font-size: 25px; font-weight: 600;
+    letter-spacing: 0.5px; line-height: 1.5; margin-bottom: 18px;
+  }
+  h3 {
+    font-family: var(--serif); font-size: 18px; font-weight: 600;
+    margin-bottom: 8px; letter-spacing: 0.3px;
+  }
+  p { margin-bottom: 16px; color: var(--ink-soft); }
+  p:last-child { margin-bottom: 0; }
+  strong { color: var(--ink); font-weight: 600; }
+  .lead { font-size: 17.5px; color: var(--ink); }
+  a { color: var(--ink); text-underline-offset: 3px; text-decoration-color: var(--gray-faint); }
+
+  /* ── 首屏 ── */
+  header.hero { padding: 88px 0 54px; text-align: center; }
+  .hero .kicker { font-size: 12.5px; letter-spacing: 5px; color: var(--gray-mute); text-transform: uppercase; margin-bottom: 26px; }
+  .hero h1 {
+    font-family: var(--serif); font-size: 46px; font-weight: 600;
+    letter-spacing: 3px; line-height: 1.25; margin-bottom: 22px;
+  }
+  .hero .tagline { font-family: var(--serif); font-size: 18px; color: var(--ink-soft); line-height: 1.9; }
+  .hero .tagline .em { color: var(--ink); }
+  .hero .meta { margin-top: 30px; font-size: 12.5px; letter-spacing: 1.5px; color: var(--gray-light); }
+  .hero .meta span { margin: 0 9px; }
+
+  /* ── 大引语 ── */
+  blockquote {
+    font-family: var(--serif); font-size: 23px; line-height: 1.85; color: var(--ink);
+    letter-spacing: 0.5px; text-align: center; padding: 8px 0;
+  }
+  blockquote .sub { display: block; font-size: 13px; letter-spacing: 2px; color: var(--gray-light); font-family: var(--sans); margin-top: 20px; }
+
+  /* ── 设计决策块 ── */
+  .decision { padding: 26px 0; border-top: 1px solid var(--line-faint); }
+  .decision:first-of-type { border-top: none; padding-top: 4px; }
+  .tradeoff { display: flex; flex-wrap: wrap; gap: 10px 16px; margin: 14px 0 2px; }
+  .chip {
+    font-size: 13px; padding: 7px 14px; border-radius: 20px; border: 1px solid var(--line);
+    background: var(--card); letter-spacing: 0.3px;
+  }
+  .chip.no { color: var(--gray-light); text-decoration: line-through; text-decoration-color: var(--gray-faint); }
+  .chip.yes { color: var(--ink); border-color: #D8D3C8; }
+  .decision .why { margin-top: 14px; }
+
+  /* ── 生命周期 ── */
+  .cycle { text-align: center; padding: 8px 0 4px; }
+  .cycle .node {
+    display: inline-block; font-family: var(--serif); font-size: 15px; color: var(--ink);
+    padding: 9px 16px; border: 1px solid var(--line); border-radius: 22px; background: var(--card);
+    margin: 6px 3px; white-space: nowrap;
+  }
+  .cycle .node.soft { color: var(--gray); border-style: dashed; border-color: var(--gray-faint); }
+  .cycle .arrow { color: var(--gray-faint); margin: 0 2px; font-size: 14px; }
+  .cycle .line { margin: 6px 0; }
+  .cycle .note { font-size: 13px; color: var(--gray-light); margin-top: 20px; font-family: var(--sans); letter-spacing: 0.3px; }
+
+  /* ── 手机 demo ── */
+  .demo-stage { background: var(--paper-2); border-radius: 26px; border: 1px solid var(--line); padding: 40px 24px 32px; text-align: center; }
+  .phone {
+    width: 340px; max-width: 100%; margin: 0 auto;
+    border: 1px solid #D8D3C8; border-radius: 44px; background: #000;
+    padding: 10px; overflow: hidden;
+  }
+  .phone iframe {
+    width: 100%; height: 700px; border: none; border-radius: 34px; background: var(--paper);
+    display: block;
+  }
+  .demo-cap { font-size: 13px; color: var(--gray-light); margin-top: 22px; letter-spacing: 0.5px; }
+  .btn-row { margin-top: 22px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--sans); font-size: 14px; letter-spacing: 0.5px; text-decoration: none;
+    padding: 12px 26px; border-radius: 24px; border: 1px solid var(--ink);
+    background: var(--ink); color: var(--paper); transition: opacity .2s;
+  }
+  .btn:hover { opacity: .82; }
+  .btn.ghost { background: transparent; color: var(--ink-soft); border-color: var(--line); }
+
+  /* ── 界面走查小卡 ── */
+  .screens { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 24px; margin-top: 8px; }
+  .screens .s h3 { margin-bottom: 6px; }
+  .screens .s p { font-size: 14.5px; margin-bottom: 0; }
+
+  /* ── 技术实现 ── */
+  .tech { list-style: none; }
+  .tech li { padding: 13px 0; border-top: 1px solid var(--line-faint); display: flex; gap: 16px; font-size: 15px; }
+  .tech li:first-child { border-top: none; }
+  .tech .k { color: var(--ink); font-weight: 600; flex: 0 0 96px; }
+  .tech .v { color: var(--ink-soft); }
+
+  footer { padding: 54px 0 72px; text-align: center; border-top: 1px solid var(--line-faint); }
+  footer .big { font-family: var(--serif); font-size: 19px; color: var(--ink); margin-bottom: 18px; letter-spacing: 0.5px; }
+  footer .fine { font-size: 12.5px; color: var(--gray-light); letter-spacing: 1px; margin-top: 26px; }
+
+  @media (max-width: 560px) {
+    .hero h1 { font-size: 36px; }
+    h2 { font-size: 22px; }
+    blockquote { font-size: 20px; }
+    .screens { grid-template-columns: 1fr; }
+    section { padding: 40px 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker">Product · Interaction Design</p>
+    <h1>决策日记</h1>
+    <p class="tagline">
+      购买前<span class="em">想清楚</span>，购买后<span class="em">长期验证</span>。<br>
+      一款把「消费决策」当成一段时间来记录的产品。
+    </p>
+    <p class="meta"><span>个人项目</span>·<span>概念到高保真可交互原型</span>·<span>2026</span></p>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <blockquote>
+      它记录的不是「我得到过什么」，<br>而是「<strong>我认真想过什么</strong>」。
+    </blockquote>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="label">01 · 出发点</p>
+    <h2>大多数消费决策，是冲动的，且买完就结束了</h2>
+    <p class="lead">
+      我们会为一件东西纠结很久，却很少把「为什么想要它」写下来；买回来之后，也几乎不会回头验证：当初那个理由，后来成立了吗？
+    </p>
+    <p>
+      市面上的记账、清单、购物类工具，都在往「更高效地拥有更多」使劲——总价值、折旧、待购清单、成就打卡。它们服务于<strong>获得</strong>。
+    </p>
+    <p>
+      而这里想服务的是另一件事：<strong>克制与诚实</strong>。一次决策不是一个瞬间，而是一段在时间里展开的故事——从动机、犹豫，到决定，再到几个月、几年后的回访。产品的核心对象，是这段时间本身。
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="label">02 · 设计原则与取舍</p>
+    <h2>每一个「不做」，都是一次立场选择</h2>
+    <p style="margin-bottom:8px">
+      这个产品最难的不是加功能，而是<strong>克制</strong>。下面这些取舍，共同定义了它的性格。
+    </p>
+
+    <div class="decision">
+      <h3>文字优先于数字</h3>
+      <div class="tradeoff">
+        <span class="chip no">730 天</span>
+        <span class="chip no">总资产 ¥6,973</span>
+        <span class="chip yes">陪伴你两年了</span>
+      </div>
+      <p class="why">
+        全产品「数」的只有思考和时间，不是钱和物。截图任何一页，第一眼看到的都不应该是数字。价格在场，但绝不聚合、不进首页——它是思考的材料，不是资产的度量。
+      </p>
+    </div>
+
+    <div class="decision">
+      <h3>按时间流组织，不按分类组织</h3>
+      <div class="tradeoff">
+        <span class="chip no">「想买」Tab</span>
+        <span class="chip no">「已买」Tab</span>
+        <span class="chip yes">同一条时间流</span>
+      </div>
+      <p class="why">
+        「想买」和「已买」不是两个货架，而是同一个决策故事里的不同章节。购买只是一次章节转折。分类被降级进「索引」页——那是书末的附录，永远不进封面。
+      </p>
+    </div>
+
+    <div class="decision">
+      <h3>「决定不买」享受和购买完全同等的待遇</h3>
+      <div class="tradeoff">
+        <span class="chip no">删除 / 归档</span>
+        <span class="chip yes">完整留在时间线 + 仪式时刻</span>
+      </div>
+      <p class="why">
+        「这个念头陪了你 47 天，你想清楚了。」——想清楚后放下，是这个产品核心承诺兑现得最彻底的时刻，理应被郑重记住，而不是悄悄清掉。
+      </p>
+    </div>
+
+    <div class="decision">
+      <h3>诚实地承认「闲置」与「告别」</h3>
+      <div class="tradeoff">
+        <span class="chip no">已卖出 · 回血 ¥800</span>
+        <span class="chip yes">告别（方式写进告别语）</span>
+      </div>
+      <p class="why">
+        买了却不用，要求写一句诚实的记录——这是「购买后验证」的负面结果，是产品诚实性的关键。而卖掉、送人、用坏统一为「告别」，<strong>刻意不设卖价字段</strong>：一旦记录残值与回血，产品就会滑向资产管理，背离初衷。
+      </p>
+    </div>
+
+    <div class="decision">
+      <h3>仪式感必须稀有，且只庆祝「想清楚」</h3>
+      <div class="tradeoff">
+        <span class="chip no">连续打卡</span>
+        <span class="chip no">成就徽章</span>
+        <span class="chip yes">四个节点，仅此而已</span>
+      </div>
+      <p class="why">
+        全产品只有四个全屏仪式时刻：第一次记录、决定购买、决定不买、陪伴周年。庆祝的是「你想清楚了」，从不是「你获得了」。
+      </p>
+    </div>
+
+    <div class="decision">
+      <h3>说话的是「这本日记」，不是助手</h3>
+      <div class="tradeoff">
+        <span class="chip no">太棒了！</span>
+        <span class="chip no">别忘了 / 快来</span>
+        <span class="chip yes">陈述句 · 称「你」· 不评价</span>
+      </div>
+      <p class="why">
+        全产品禁用感叹号与 emoji，唯一的问句是回访提示（「感觉如何？」）。产品对你的决定没有立场——买与不买，被同样平静地对待。
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="label">03 · 决策的生命周期</p>
+    <h2>一件物品的传记，按时间正序展开</h2>
+    <div class="cycle">
+      <div class="line">
+        <span class="node">犹豫中</span>
+      </div>
+      <div class="line"><span class="arrow">┈┈</span></div>
+      <div class="line">
+        <span class="node">决定购买</span>
+        <span class="arrow">·</span>
+        <span class="node soft">决定不买</span>
+        <span class="arrow">·</span>
+        <span class="node soft">搁置</span>
+      </div>
+      <div class="line"><span class="arrow">↓</span></div>
+      <div class="line">
+        <span class="node">陪伴你</span>
+        <span class="arrow">⇄</span>
+        <span class="node soft">闲置了</span>
+        <span class="arrow">→</span>
+        <span class="node soft">告别了</span>
+      </div>
+      <p class="note">每个状态都有对应的叙事文案与（稀有的）仪式时刻；错过回访没有任何惩罚——不累积、无红点、不催促。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="label">04 · 界面</p>
+    <h2>四样东西，一张卡片</h2>
+    <div class="screens">
+      <div class="s">
+        <h3>时间线 · 首页</h3>
+        <p>按月份分节的决策卡，每张只含物品名、一句状态叙事、当时写下的动机首句。绝不出现价格、进度条、分类图标或卡内按钮——整卡可点是唯一交互。</p>
+      </div>
+      <div class="s">
+        <h3>详情 · 一件物品的传记</h3>
+        <p>决策起点 → 历次回访 → 折叠在最底部的元数据（价格、日期）。价格退到最不显眼处，作为事实存档。</p>
+      </div>
+      <div class="s">
+        <h3>索引 · 书末附录</h3>
+        <p>唯一按分类、状态归组的地方，满足「找到某件东西」。头部随筛选变化：「你认真想过 12 件东西」。</p>
+      </div>
+      <div class="s">
+        <h3>仪式 · 稀有的全屏时刻</h3>
+        <p>一句话为主体的安静卡片，出现在真诚记录之后。米白、衬线、无音效轰炸。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="label">05 · 可交互原型</p>
+    <h2>下面是真实原型，直接玩</h2>
+    <div class="demo-stage">
+      <div class="phone">
+        <iframe src="prototype/" title="决策日记可交互原型" loading="lazy"></iframe>
+      </div>
+      <p class="demo-cap">↑ 可点击、可新建、可翻看——数据存在你本地浏览器里</p>
+      <div class="btn-row">
+        <a class="btn" href="prototype/" target="_blank" rel="noopener">在新窗口打开完整 demo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="label">06 · 实现</p>
+    <h2>不只是设计稿，是一个能装进口袋的原型</h2>
+    <ul class="tech">
+      <li><span class="k">形态</span><span class="v">纯前端单文件高保真原型，零框架、零依赖</span></li>
+      <li><span class="k">数据</span><span class="v">localStorage 本地存储，照片经 canvas 压缩后内联，可离线读写</span></li>
+      <li><span class="k">交付</span><span class="v">封装为可安装的 PWA（可添加到手机主屏、全屏、离线可用）</span></li>
+      <li><span class="k">部署</span><span class="v">GitHub Pages 托管，HTTPS 公开访问</span></li>
+      <li><span class="k">一致性</span><span class="v">连这份案例本身也遵循产品原则：无阴影、无渐变、极少颜色、衬线为骨</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="big">安静、被信任、不着急。</p>
+    <p style="color:var(--gray-light);font-size:14px;">App 不对用户提任何要求。</p>
+    <p class="fine">决策日记 · 设计案例 · 2026</p>
+  </div>
+</footer>
+
+</body>
+</html>
