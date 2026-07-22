@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="决策日记">
-<meta name="theme-color" content="#FAF8F3">
+<meta name="theme-color" content="#F6F1F0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -17,78 +17,86 @@
 <title>决策日记</title>
 <style>
   :root {
-    --paper: #FAF8F3;
+    --paper: #F6F1F0;
     --card: #FFFFFF;
-    --ink: #2C2A26;
-    --ink-soft: #6B665C;
-    --gray: #8F897D;
-    --gray-light: #A9A49B;
-    --gray-faint: #C2BDB2;
-    --gray-mute: #B8B3A8;
-    --line: #EAE6DC;
-    --line-faint: #EFEBE2;
-    --serif: "Songti SC", "Noto Serif SC", Georgia, serif;
+    --ink: #1D1A1A;
+    --ink-soft: #5E5757;
+    --gray: #8E8688;
+    --gray-light: #A79FA0;
+    --gray-faint: #BBB2B3;
+    --gray-mute: #B4ACAD;
+    --line: #EBE3E1;
+    --line-faint: #F0E9E7;
+    --accent: #5E5CE6;
+    --serif: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
     --sans: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+    --serif-real: "Songti SC", "Noto Serif SC", Georgia, serif;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body { background: var(--paper); font-family: var(--sans); color: var(--ink); }
   .app { max-width: 420px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
   .screen { flex: 1; padding: 24px 24px 90px; display: none; }
   .screen.active { display: block; }
-  .page-title { font-family: var(--serif); font-size: 22px; letter-spacing: 0.5px; }
-  .page-sub { font-size: 13px; color: var(--gray-light); margin-top: 6px; }
-  .header { padding: 18px 0 16px; }
-  .review-line { border-top: 1px solid var(--line); padding: 14px 0 16px; font-family: var(--serif); font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; cursor: pointer; }
-  .month { font-size: 12px; color: var(--gray-mute); letter-spacing: 3px; margin: 18px 0 10px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 17px 15px; margin-bottom: 12px; cursor: pointer; transition: border-color .25s ease; }
-  .card:active { border-color: #D8D3C8; }
-  .card .name { font-family: var(--serif); font-size: 17px; }
-  .card .state { font-size: 12px; color: var(--gray-light); letter-spacing: 0.3px; margin-top: 6px; }
-  .card .quote { font-size: 13.5px; color: var(--gray); line-height: 1.65; margin-top: 11px; }
-  .filters { display: flex; gap: 20px; border-bottom: 1px solid var(--line); padding: 6px 0 0; }
-  .filter { font-size: 13px; color: var(--gray-mute); padding-bottom: 10px; cursor: pointer; border-bottom: 1px solid transparent; }
-  .filter.on { color: var(--ink); border-bottom-color: var(--ink); }
-  .cat { font-size: 12px; color: var(--gray-mute); letter-spacing: 3px; margin: 20px 0 2px; }
+  .page-title { font-size: 26px; font-weight: 700; letter-spacing: 0.3px; }
+  .page-sub { font-size: 12.5px; color: var(--gray); margin-top: 10px; }
+  .header { padding: 18px 0 14px; }
+  .review-line { background: var(--card); border-radius: 18px; padding: 14px 16px; font-size: 13px; color: var(--ink-soft); line-height: 1.65; cursor: pointer; margin-top: 4px; }
+  .month { font-size: 15px; font-weight: 600; color: var(--ink); margin: 20px 0 10px; }
+  .card { background: var(--card); border-radius: 18px; padding: 15px 16px 13px; margin-bottom: 10px; cursor: pointer; transition: opacity .2s ease; }
+  .card:active { opacity: 0.85; }
+  .card .name { font-size: 15.5px; font-weight: 600; }
+  .card .state { font-size: 11.5px; color: var(--gray-faint); margin-top: 10px; }
+  .card .quote { font-size: 13px; color: var(--gray); line-height: 1.6; margin-top: 9px; }
+  .filters { display: flex; gap: 18px; padding: 6px 0 4px; overflow-x: auto; }
+  .filter { font-size: 13px; color: var(--gray-faint); font-weight: 600; padding-bottom: 6px; cursor: pointer; white-space: nowrap; }
+  .filter.on { color: var(--ink); }
+  .cat { font-size: 11.5px; color: var(--gray-mute); letter-spacing: 1px; margin: 22px 0 2px; font-weight: 600; }
   .row { padding: 12px 0; border-bottom: 1px solid var(--line-faint); cursor: pointer; }
   .row-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
   .row .name { font-size: 14.5px; }
   .row .time { font-size: 12px; color: var(--gray); flex-shrink: 0; }
   .row .sub { font-size: 11.5px; color: var(--gray-faint); margin-top: 4px; }
-  .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--paper); border-top: 1px solid var(--line); }
-  .tabbar-inner { max-width: 420px; margin: 0 auto; display: flex; justify-content: space-around; padding: 14px 0 max(20px, env(safe-area-inset-bottom)); }
-  .tab { font-size: 13px; color: var(--gray-mute); cursor: pointer; }
+  .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--paper); }
+  .tabbar-inner { max-width: 420px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 12px 52px max(18px, env(safe-area-inset-bottom)); position: relative; }
+  .tab { font-size: 12.5px; color: var(--gray-faint); cursor: pointer; font-weight: 600; }
   .tab.on { color: var(--ink); }
+  .fab { position: absolute; left: 50%; transform: translateX(-50%); top: -18px; width: 54px; height: 54px; border-radius: 50%; background: var(--card); color: var(--accent); font-size: 28px; font-weight: 300; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 5px rgba(0,0,0,0.10); cursor: pointer; }
+  .menu-btn { font-size: 17px; color: var(--gray); cursor: pointer; padding: 2px 8px 2px 0; }
+  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.25); display: none; z-index: 20; }
+  .scrim.show { display: block; }
+  .drawer { position: fixed; top: 0; bottom: 0; left: 0; width: 82%; max-width: 320px; background: var(--paper); z-index: 21; transform: translateX(-105%); transition: transform .28s ease; padding: calc(30px + env(safe-area-inset-top)) 24px 24px; overflow-y: auto; }
+  .drawer.show { transform: translateX(0); }
   .topbar { display: flex; justify-content: space-between; align-items: center; padding-top: 4px; }
   .topbar .side { font-size: 13px; color: var(--ink-soft); font-weight: 300; cursor: pointer; }
   .plus { font-size: 20px; }
   .back { font-size: 13px; color: var(--ink-soft); cursor: pointer; padding: 4px 0; }
-  .bio-name { font-family: var(--serif); font-size: 22px; margin-top: 22px; }
+  .bio-name { font-size: 22px; font-weight: 700; margin-top: 22px; }
   .bio-state { font-size: 12.5px; color: var(--gray-light); margin-top: 8px; letter-spacing: 0.3px; }
-  .entry { border-top: 1px solid var(--line-faint); margin-top: 26px; padding-top: 18px; }
-  .entry:first-of-type { border-top: none; }
+  .entry { background: var(--card); border-radius: 18px; padding: 15px 16px 14px; margin-top: 12px; }
+  .entry:first-of-type { margin-top: 26px; }
   .entry .e-head { display: flex; align-items: baseline; }
   .entry .date { font-size: 11.5px; color: var(--gray-mute); letter-spacing: 2px; }
   .entry .kind { font-size: 11.5px; color: var(--gray-light); margin-left: 10px; }
   .entry .e-del { margin-left: auto; font-size: 13px; color: var(--gray-light); cursor: pointer; line-height: 1; padding: 3px 8px; border: 1px solid var(--line); border-radius: 7px; }
-  .entry .text { font-family: var(--serif); font-size: 15px; line-height: 1.9; color: var(--ink); margin-top: 12px; }
-  .meta { margin-top: 40px; border-top: 1px solid var(--line); padding-top: 8px; }
+  .entry .text { font-size: 15px; line-height: 1.8; color: var(--ink); margin-top: 10px; }
+  .meta { margin-top: 40px; padding-top: 8px; }
   .meta summary { font-size: 12px; color: var(--gray-mute); padding: 10px 0; cursor: pointer; list-style: none; }
   .meta summary::-webkit-details-marker { display: none; }
   .meta .mrow { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; color: var(--gray); }
   .meta .mrow span:last-child { color: var(--ink-soft); }
-  .create-q { font-family: var(--serif); font-size: 20px; margin-top: 44px; line-height: 1.6; }
-  .create-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--line); font-family: var(--serif); font-size: 16px; padding: 14px 0 10px; outline: none; color: var(--ink); }
+  .create-q { font-size: 22px; font-weight: 700; margin-top: 44px; line-height: 1.5; }
+  .create-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--line); font-size: 15px; padding: 14px 0 10px; outline: none; color: var(--ink); }
   .create-input::placeholder, .create-area::placeholder { color: var(--gray-faint); }
-  .create-area { width: 100%; min-height: 150px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 15px; font-family: var(--serif); font-size: 15px; line-height: 1.9; outline: none; resize: none; color: var(--ink); margin-top: 20px; }
+  .create-area { width: 100%; min-height: 140px; background: transparent; border: none; padding: 16px 0 0; font-size: 16px; line-height: 1.8; outline: none; resize: none; color: var(--ink); margin-top: 4px; }
   .create-actions { margin-top: 30px; display: flex; gap: 12px; align-items: center; }
   .btn { font-family: var(--sans); font-size: 13.5px; padding: 10px 22px; border-radius: 22px; cursor: pointer; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); }
   .btn.ghost { background: transparent; border-color: var(--line); color: var(--gray); }
   .overlay { position: fixed; inset: 0; background: var(--paper); display: none; align-items: center; justify-content: center; text-align: center; padding: 44px; z-index: 10; }
   .overlay.show { display: flex; }
-  .ritual-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 42px 30px 28px; width: 100%; max-width: 300px; }
+  .ritual-card { background: var(--card); border-radius: 20px; padding: 42px 30px 28px; width: 100%; max-width: 300px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
   .r-label { font-size: 11px; color: var(--gray-mute); letter-spacing: 5px; }
-  .r-name { font-family: var(--serif); font-size: 21px; color: var(--ink); margin-top: 20px; }
-  .r-text { font-family: var(--serif); font-size: 14.5px; line-height: 2.1; color: var(--ink-soft); margin-top: 16px; }
+  .r-name { font-size: 21px; font-weight: 700; color: var(--ink); margin-top: 20px; }
+  .r-text { font-family: var(--serif-real); font-size: 14.5px; line-height: 2.1; color: var(--ink-soft); margin-top: 16px; }
   .r-date { font-size: 11px; color: var(--gray-faint); margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line-faint); letter-spacing: 2px; }
   .overlay .small { font-size: 12px; color: var(--gray-faint); margin-top: 28px; }
   .photo-preview { width: 88px; height: 88px; object-fit: cover; border-radius: 12px; margin-top: 12px; border: 1px solid var(--line); display: none; }
@@ -120,10 +128,10 @@
   .cal-sep { font-size: 12px; color: var(--gray-mute); }
   .cal-go { font-size: 12px; color: var(--ink-soft); cursor: pointer; margin-left: 6px; border-bottom: 1px solid var(--line); padding-bottom: 1px; }
   .card-row { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
-  .card-thumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--line); }
-  .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 1px solid var(--line); display: none; cursor: pointer; }
+  .card-thumb { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
+  .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; display: none; cursor: pointer; }
   .avatar-ph { width: 72px; height: 72px; border-radius: 50%; border: 1px dashed var(--gray-faint); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--gray-faint); cursor: pointer; text-align: center; line-height: 1.5; }
-  .me-name { background: transparent; border: none; outline: none; font-family: var(--serif); font-size: 19px; color: var(--ink); width: 100%; padding: 0; position: relative; top: -2px; }
+  .me-name { background: transparent; border: none; outline: none; font-size: 19px; font-weight: 600; color: var(--ink); width: 100%; padding: 0; position: relative; top: -2px; }
   .me-name::placeholder { color: var(--gray-faint); }
   .settings-group { margin-top: 28px; }
   .settings-row { padding: 15px 0; border-bottom: 1px solid var(--line-faint); font-size: 14.5px; color: var(--ink); display: flex; justify-content: space-between; }
@@ -135,17 +143,17 @@
 <div class="app">
 
   <div class="screen active" id="screen-timeline">
-    <div class="topbar"><span></span><span class="side plus" onclick="openCreate()">＋</span></div>
+    <div class="topbar"><span class="menu-btn" onclick="openDrawer()">☰</span><span></span></div>
     <div class="header">
-      <p class="page-title" id="today-date">七月十七日</p>
-      <p class="page-sub">你正在考虑两件东西</p>
+      <p class="page-title">决策日记</p>
+      <p class="page-sub" id="home-stats"></p>
     </div>
     <p class="review-line" onclick="openDetail('headphone')">降噪耳机已经陪你三个月了，感觉如何？</p>
     <div id="timeline-list"></div>
   </div>
 
   <div class="screen" id="screen-index">
-    <div class="topbar"><span></span><span class="side">搜索</span></div>
+    <div class="topbar"><span class="menu-btn" onclick="openDrawer()">☰</span><span class="side">搜索</span></div>
     <div class="header">
       <p class="page-title">索引</p>
       <p class="page-sub" id="index-sub"></p>
@@ -159,29 +167,6 @@
       <span class="filter" data-f="ended">告别</span>
     </div>
     <div id="index-list"></div>
-  </div>
-
-  <div class="screen" id="screen-me">
-    <div class="header">
-      <div style="display: flex; align-items: center; gap: 18px;" id="me-head">
-        <div id="me-avatar-box" style="margin-left: -1px;">
-          <img class="avatar" id="me-avatar" alt="" onclick="document.getElementById('me-photo').click()">
-          <div class="avatar-ph" id="me-avatar-ph" onclick="document.getElementById('me-photo').click()">添加<br>照片</div>
-          <input type="file" accept="image/*" id="me-photo" style="display:none" onchange="setAvatar()">
-        </div>
-        <div style="flex: 1;">
-          <input class="me-name" id="me-name" placeholder="写下你的名字" onchange="saveName()">
-          <p class="page-sub" id="me-sub" style="margin-top: 13px;">这本日记的主人</p>
-        </div>
-      </div>
-    </div>
-    <div class="settings-group">
-      <div class="settings-row"><span>回访提醒</span><span>每周至多一条</span></div>
-      <div class="settings-row"><span>iCloud 同步</span><span>已开启</span></div>
-      <div class="settings-row"><span>导出全部记录</span><span></span></div>
-      <div class="settings-row"><span>关于</span><span></span></div>
-    </div>
-    <p class="empty-note">这本日记属于你自己。<br>没有会员，没有推送轰炸，没有统计报表。</p>
   </div>
 
   <div class="screen" id="screen-detail">
@@ -253,6 +238,28 @@
 
 </div>
 
+<div class="scrim" id="scrim" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div style="display: flex; align-items: center; gap: 18px;" id="me-head">
+    <div id="me-avatar-box">
+      <img class="avatar" id="me-avatar" alt="" onclick="document.getElementById('me-photo').click()">
+      <div class="avatar-ph" id="me-avatar-ph" onclick="document.getElementById('me-photo').click()">添加<br>照片</div>
+      <input type="file" accept="image/*" id="me-photo" style="display:none" onchange="setAvatar()">
+    </div>
+    <div style="flex: 1;">
+      <input class="me-name" id="me-name" placeholder="写下你的名字" onchange="saveName()">
+      <p class="page-sub" id="me-sub" style="margin-top: 8px;">这本日记的主人</p>
+    </div>
+  </div>
+  <div class="settings-group">
+    <div class="settings-row"><span>回访提醒</span><span>每周至多一条</span></div>
+    <div class="settings-row"><span>iCloud 同步</span><span>已开启</span></div>
+    <div class="settings-row"><span>导出全部记录</span><span></span></div>
+    <div class="settings-row"><span>关于</span><span></span></div>
+  </div>
+  <p class="empty-note">这本日记属于你自己。<br>没有会员，没有推送轰炸，没有统计报表。</p>
+</div>
+
 <div class="overlay" id="ritual" onclick="hideRitual()">
   <div style="text-align: center;">
     <div class="ritual-card">
@@ -268,8 +275,8 @@
 <div class="tabbar" id="tabbar">
   <div class="tabbar-inner">
     <span class="tab on" data-t="timeline">时间线</span>
+    <div class="fab" onclick="openCreate()">＋</div>
     <span class="tab" data-t="index">索引</span>
-    <span class="tab" data-t="me">我的</span>
   </div>
 </div>
 
@@ -400,15 +407,14 @@ function renderTimeline() {
       const imgs = v.entries.filter(e => e.img);
       const thumb = imgs.length ? `<img class="card-thumb" src="${imgs[imgs.length - 1].img}">` : "";
       html += `<div class="card" onclick="openDetail('${k}')">
-        <div class="card-row"><div>
-          <p class="name">${v.name}</p>
-          <p class="state">${v.state}</p>
-        </div>${thumb}</div>
-        ${v.quote ? `<p class="quote">${v.quote}</p>` : ""}
+        <div class="card-row"><p class="name">${v.name}</p>${thumb}</div>
+        ${v.quote ? `<p class="quote">${v.quote.replace(/^「|」$/g, "")}</p>` : ""}
+        <p class="state">${v.state}</p>
       </div>`;
     });
   });
   el.innerHTML = html;
+  renderStats();
 }
 
 let currentFilter = "all";
@@ -495,7 +501,18 @@ function cnDay(d) {
   return "三十" + cn[d-31];
 }
 const todayCn = cn[now.getMonth()] + "月" + cnDay(now.getDate()) + "日";
-document.getElementById("today-date").textContent = todayCn;
+
+function renderStats() {
+  const all = Object.values(items);
+  const nDeciding = all.filter(v => v.status === "deciding").length;
+  const nComp = all.filter(v => v.status === "companion").length;
+  const dates = new Set();
+  all.forEach(v => v.entries.forEach(e => dates.add(e.date)));
+  document.getElementById("home-stats").innerHTML =
+    `<b style="color:var(--accent);font-weight:600">${nDeciding}</b> 在想　` +
+    `<b style="color:var(--ink);font-weight:600">${nComp}</b> 陪伴中　` +
+    `陪伴你 <b style="color:var(--ink);font-weight:600">${dates.size}</b> 天`;
+}
 
 let firstRecordDone = false;
 let composeMode = null;
@@ -700,6 +717,15 @@ function exitDelMode() {
   delMode = false;
   document.getElementById("d-del-hint").style.display = "none";
   renderEntries(items[currentKey]);
+}
+
+function openDrawer() {
+  document.getElementById("scrim").classList.add("show");
+  document.getElementById("drawer").classList.add("show");
+}
+function closeDrawer() {
+  document.getElementById("scrim").classList.remove("show");
+  document.getElementById("drawer").classList.remove("show");
 }
 
 function showRitual(text, label, name) {
