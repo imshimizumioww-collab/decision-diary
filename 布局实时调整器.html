@@ -114,13 +114,13 @@ const CONFIG = [
     ["statsX", "左右", -80, 80, 0], ["statsY", "上下", -30, 140, 44.5], ["statsSize", "字号", 10, 22, 12.5]
   ] },
   { title: "降噪耳机白色框：大小与上下相对位置", keys: [
-    ["reviewY", "上下", -40, 180, 44], ["reviewW", "宽度", 220, 342, 342], ["reviewH", "高度", 42, 110, 68.5]
+    ["reviewY", "上下", -40, 180, 44], ["reviewW", "宽度", 220, 372, 372], ["reviewH", "高度", 42, 110, 68.5]
   ] },
   { title: "剩下所有白框：上下调整", keys: [
     ["listY", "上下", -40, 180, 35]
   ] }
 ];
-const STORAGE_KEY = "decision-layout-timeline-real-v4";
+const STORAGE_KEY = "decision-layout-timeline-real-v5";
 const defaults = {};
 CONFIG.forEach(group => group.keys.forEach(k => defaults[k[0]] = k[4]));
 let values = { ...defaults, ...(JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {}) };
@@ -158,9 +158,6 @@ function draw() {
     #screen-timeline #timeline-list {
       position: relative !important;
       top: ${px(values.listY)} !important;
-    }
-    #screen-timeline .card {
-      width: ${px(values.reviewW)} !important;
     }
   `;
 
