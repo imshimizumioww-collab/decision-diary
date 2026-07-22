@@ -228,14 +228,16 @@
   #screen-index .header {
     position: relative;
     left: 0;
-    top: 47.5px;
+    top: 44.5px;
   }
   #screen-index .page-sub {
     font-size: 12.5px;
   }
   #screen-index .filters {
     position: relative;
-    top: 63.5px;
+    top: 40.5px;
+    transform: scale(1);
+    transform-origin: left top;
   }
   #screen-index .filter {
     font-size: 11.5px;
@@ -245,7 +247,7 @@
   }
   #screen-index #index-list {
     position: relative;
-    top: 53.5px;
+    top: 30.5px;
   }
 </style>
 </head>
@@ -1121,20 +1123,6 @@ restore();
 applyProfile();
 renderTimeline();
 renderIndex();
-
-window.addEventListener("message", (event) => {
-  const data = event.data || {};
-  if (data.type !== "timeline-layout-adjust" || typeof data.css !== "string") return;
-  let style = document.getElementById("timeline-adjuster-style");
-  if (!style) {
-    style = document.createElement("style");
-    style.id = "timeline-adjuster-style";
-    document.head.appendChild(style);
-  }
-  style.textContent = data.css;
-  showScreen("timeline");
-  document.getElementById("tabbar").style.display = "";
-});
 
 /* PWA：注册 service worker，让它可安装到主屏、离线可用。
    file:// 直接打开时没有 SW 环境，静默跳过，不影响本地预览。 */

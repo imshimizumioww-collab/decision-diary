@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>决策日记 · 时间线布局调整器</title>
+<title>决策日记 · 索引布局调整器</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -14,9 +14,9 @@
   }
   .layout {
     display: grid;
-    grid-template-columns: 420px minmax(330px, 390px);
-    gap: 28px;
-    width: min(880px, calc(100vw - 32px));
+    grid-template-columns: 420px 420px minmax(330px, 380px);
+    gap: 22px;
+    width: min(1264px, calc(100vw - 32px));
     margin: 0 auto;
     padding: 26px 0;
     align-items: start;
@@ -27,7 +27,7 @@
     margin: 0 0 10px 2px;
     font-weight: 600;
   }
-  .real-preview {
+  .preview-frame {
     width: 420px;
     height: 844px;
     border: 1px solid #EBE3E1;
@@ -80,25 +80,32 @@
     font: 11.5px/1.75 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     white-space: pre-wrap;
   }
-  @media (max-width: 860px) {
+  @media (max-width: 1080px) {
     .layout { grid-template-columns: 1fr; width: min(420px, calc(100vw - 24px)); }
     .panel { position: static; max-height: none; }
-    .real-preview, iframe { width: min(420px, 100%); }
+    .preview-frame, iframe { width: min(420px, 100%); }
   }
 </style>
 </head>
 <body>
 <div class="layout">
   <main>
-    <p class="module-title">真实 prototype 时间线页</p>
-    <div class="real-preview">
-      <iframe id="preview" src="prototype/index.html"></iframe>
+    <p class="module-title">写死的时间线页</p>
+    <div class="preview-frame">
+      <iframe id="timeline-frame" src="prototype/index.html"></iframe>
+    </div>
+  </main>
+
+  <main>
+    <p class="module-title">索引页预览</p>
+    <div class="preview-frame">
+      <iframe id="index-frame" src="prototype/index.html"></iframe>
     </div>
   </main>
 
   <aside class="panel">
-    <h1>时间线布局调整器</h1>
-    <p class="hint">左边直接加载真实的 prototype 页面，不再手工仿制。滑块会把样式注入到这份真实页面里，所以比例和手机/浏览器里一致。</p>
+    <h1>索引布局调整器</h1>
+    <p class="hint">两个预览都直接加载真实 prototype。左边固定显示时间线页作参照，右边显示索引页；滑块只影响右边索引预览，不会保存进 prototype。</p>
     <div id="controls"></div>
     <div class="actions">
       <button onclick="resetValues()">重置</button>
@@ -110,79 +117,59 @@
 
 <script>
 const CONFIG = [
-  { title: "2 在想 到 陪伴你 18 天：上下左右相对位置与大小", keys: [
-    ["statsX", "左右", -80, 80, 0], ["statsY", "上下", -30, 140, 44.5], ["statsSize", "字号", 10, 22, 12.5]
+  { title: "你认真想过 10 件东西：上下左右相对位置与大小", keys: [
+    ["indexSubX", "左右", -80, 80, 0], ["indexSubY", "上下", -30, 140, 44.5], ["indexSubSize", "字号", 10, 22, 12.5]
   ] },
-  { title: "降噪耳机白色框：大小与上下相对位置", keys: [
-    ["reviewY", "上下", -40, 180, 44], ["reviewW", "宽度", 220, 372, 372], ["reviewH", "高度", 42, 110, 68.5]
+  { title: "全部 到 告别：上下与等比例大小调整", keys: [
+    ["indexFiltersY", "上下", -30, 160, 40.5], ["indexFiltersScale", "比例", 0.7, 1.3, 1, "x"]
   ] },
-  { title: "剩下所有白框：上下调整", keys: [
-    ["listY", "上下", -40, 180, 35]
+  { title: "数码与白框：上下调整", keys: [
+    ["indexWhiteY", "上下", -40, 190, 30.5]
   ] }
 ];
-const STORAGE_KEY = "decision-layout-timeline-real-v5";
+const STORAGE_KEY = "decision-layout-index-real-preview-v3";
 const defaults = {};
 CONFIG.forEach(group => group.keys.forEach(k => defaults[k[0]] = k[4]));
 let values = { ...defaults, ...(JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {}) };
-let frameReady = false;
 
 function px(v) { return v + "px"; }
 
-function ensureStyle(doc) {
-  let style = doc.getElementById("timeline-adjuster-style");
-  if (!style) {
-    style = doc.createElement("style");
-    style.id = "timeline-adjuster-style";
-    doc.head.appendChild(style);
-  }
-  return style;
+function buildIndexCss() {
+  return `
+    #screen-index .header {
+      position: relative !important;
+      left: ${px(values.indexSubX)} !important;
+      top: ${px(values.indexSubY)} !important;
+    }
+    #screen-index .page-sub {
+      font-size: ${px(values.indexSubSize)} !important;
+    }
+    #screen-index .filters {
+      position: relative !important;
+      top: ${px(values.indexFiltersY)} !important;
+      transform: scale(${values.indexFiltersScale}) !important;
+      transform-origin: left top !important;
+    }
+    #screen-index #index-list {
+      position: relative !important;
+      top: ${px(values.indexWhiteY)} !important;
+    }
+  `;
+}
+
+function postToFrame(id, screen, css) {
+  const frame = document.getElementById(id);
+  if (!frame.contentWindow) return;
+  frame.contentWindow.postMessage({
+    type: "decision-layout-preview",
+    screen,
+    css: css || ""
+  }, "*");
 }
 
 function draw() {
-  const frame = document.getElementById("preview");
-  const css = `
-    #screen-timeline .header {
-      position: relative !important;
-      left: ${px(values.statsX)} !important;
-      top: ${px(values.statsY)} !important;
-    }
-    #screen-timeline .page-sub {
-      font-size: ${px(values.statsSize)} !important;
-    }
-    #screen-timeline .review-line {
-      position: relative !important;
-      top: ${px(values.reviewY)} !important;
-      width: ${px(values.reviewW)} !important;
-      min-height: ${px(values.reviewH)} !important;
-    }
-    #screen-timeline #timeline-list {
-      position: relative !important;
-      top: ${px(values.listY)} !important;
-    }
-  `;
-
-  try {
-    const doc = frame.contentDocument;
-    if (doc && doc.head) {
-      const style = ensureStyle(doc);
-      style.textContent = css;
-      if (doc.getElementById("screen-timeline")) {
-        doc.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-        doc.getElementById("screen-timeline").classList.add("active");
-        const tabbar = doc.getElementById("tabbar");
-        if (tabbar) tabbar.style.display = "";
-      }
-    }
-  } catch (e) {}
-
-  if (frame.contentWindow) {
-    frame.contentWindow.postMessage({
-      type: "timeline-layout-adjust",
-      css,
-      values
-    }, "*");
-  }
-
+  postToFrame("timeline-frame", "timeline", "");
+  postToFrame("index-frame", "index", buildIndexCss());
   localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
   renderOutput();
 }
@@ -191,28 +178,32 @@ function renderControls() {
   document.getElementById("controls").innerHTML = CONFIG.map(group =>
     '<div class="group"><p class="group-title">' + group.title + '</p>' +
     group.keys.map(k =>
-      '<div class="ctl"><label>' + k[1] + '</label><input type="range" id="' + k[0] + '" min="' + k[2] + '" max="' + k[3] + '" step="0.5" value="' + values[k[0]] + '"><span class="val" id="' + k[0] + '-val">' + values[k[0]] + 'px</span></div>'
+      '<div class="ctl"><label>' + k[1] + '</label><input type="range" id="' + k[0] + '" min="' + k[2] + '" max="' + k[3] + '" step="' + (k[5] === "x" ? "0.01" : "0.5") + '" value="' + values[k[0]] + '"><span class="val" id="' + k[0] + '-val">' + formatVal(k, values[k[0]]) + '</span></div>'
     ).join("") + '</div>'
   ).join("");
   CONFIG.flatMap(group => group.keys).forEach(k => {
     const el = document.getElementById(k[0]);
     el.addEventListener("input", () => {
       values[k[0]] = parseFloat(el.value);
-      document.getElementById(k[0] + "-val").textContent = values[k[0]] + "px";
+      document.getElementById(k[0] + "-val").textContent = formatVal(k, values[k[0]]);
       draw();
     });
   });
 }
 
+function formatVal(k, v) {
+  return k[5] === "x" ? Number(v).toFixed(2) + "x" : v + "px";
+}
+
 function renderOutput() {
   document.getElementById("out").textContent =
-    "页面：时间线页\n\n" +
-    "2 在想 到 陪伴你 18 天：上下左右相对位置与大小\n" +
-    "左右 " + values.statsX + "px   上下 " + values.statsY + "px   字号 " + values.statsSize + "px\n\n" +
-    "降噪耳机白色框：大小与上下相对位置\n" +
-    "上下 " + values.reviewY + "px   宽度 " + values.reviewW + "px   高度 " + values.reviewH + "px\n\n" +
-    "剩下所有白框：上下调整\n" +
-    "上下 " + values.listY + "px";
+    "页面：索引页\n\n" +
+    "你认真想过 10 件东西：上下左右相对位置与大小\n" +
+    "左右 " + values.indexSubX + "px   上下 " + values.indexSubY + "px   字号 " + values.indexSubSize + "px\n\n" +
+    "全部 到 告别：上下与等比例大小调整\n" +
+    "上下 " + values.indexFiltersY + "px   比例 " + Number(values.indexFiltersScale).toFixed(2) + "x\n\n" +
+    "数码与白框：上下调整\n" +
+    "上下 " + values.indexWhiteY + "px";
 }
 
 function resetValues() {
@@ -228,11 +219,8 @@ function copyValues() {
   );
 }
 
-document.getElementById("preview").addEventListener("load", () => {
-  frameReady = true;
-  draw();
-});
-
+document.getElementById("timeline-frame").addEventListener("load", draw);
+document.getElementById("index-frame").addEventListener("load", draw);
 renderControls();
 renderOutput();
 </script>
