@@ -1,7 +1,8 @@
 /* 决策日记 · 离线缓存 service worker
-   作品集 demo 用：cache-first，装到主屏后断网也能打开。
-   改了 index.html 后，把 CACHE 版本号 +1（dj-cache-v2…）即可强制刷新缓存。*/
-const CACHE = 'dj-cache-v1';
+   策略：
+   - 页面/脚本（HTML 等导航请求）网络优先 —— push 新版后刷新即可看到，不用手动改版本号。
+   - 图标等静态资源缓存优先 —— 装到主屏后断网也能打开。*/
+const CACHE = 'dj-cache-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -25,15 +26,31 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// cache-first：命中缓存直接返回，否则走网络（并顺手缓存）。
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then((hit) => {
-      if (hit) return hit;
-      return fetch(e.request).then((res) => {
+  const req = e.request;
+  const isHTML = req.mode === 'navigate' ||
+    (req.headers.get('accept') || '').includes('text/html');
+
+  if (isHTML) {
+    // 网络优先：拿到最新页面就用，顺手更新缓存；断网时回退缓存。
+    e.respondWith(
+      fetch(req).then((res) => {
         const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+        caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+        return res;
+      }).catch(() => caches.match(req).then((hit) => hit || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // 静态资源缓存优先。
+  e.respondWith(
+    caches.match(req).then((hit) => {
+      if (hit) return hit;
+      return fetch(req).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
         return res;
       }).catch(() => hit);
     })
