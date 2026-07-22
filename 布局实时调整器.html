@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>决策日记 · 布局实时调整器</title>
+<title>决策日记 · 时间线布局调整器</title>
 <style>
   :root {
     --paper: #F6F1F0;
@@ -11,7 +11,6 @@
     --ink: #1D1A1A;
     --ink-soft: #5E5757;
     --gray: #8E8688;
-    --gray-light: #A79FA0;
     --gray-faint: #BBB2B3;
     --line: #EBE3E1;
     --accent: #5E5CE6;
@@ -25,13 +24,104 @@
   }
   .layout {
     display: grid;
-    grid-template-columns: 390px 390px minmax(330px, 380px);
-    gap: 22px;
-    width: min(1230px, calc(100vw - 32px));
+    grid-template-columns: 390px minmax(330px, 390px);
+    gap: 24px;
+    width: min(840px, calc(100vw - 32px));
     margin: 0 auto;
     padding: 26px 0;
     align-items: start;
   }
+  .module-title {
+    font-size: 13px;
+    color: var(--gray);
+    margin: 0 0 10px 2px;
+    font-weight: 600;
+  }
+  .phone {
+    width: 390px;
+    min-height: 844px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 34px;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(44, 36, 32, 0.10);
+  }
+  .screen {
+    min-height: 844px;
+    padding: 24px 24px 92px;
+    position: relative;
+  }
+  .top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .rel { position: relative; }
+  .page-title {
+    position: relative;
+    left: 0;
+    top: 37.5px;
+    font-size: 29px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .icons {
+    position: relative;
+    left: 0;
+    top: 38px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .round-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #E6E4E6;
+    color: #1C1B1D;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+  }
+  .round-btn svg { width: 14px; height: 14px; }
+  .avatar-text { font-size: 10px; font-weight: 500; }
+  .stats {
+    position: relative;
+    left: 0;
+    top: 48.5px;
+    color: var(--gray);
+    white-space: nowrap;
+    font-size: 12.5px;
+  }
+  .stats b { font-weight: 600; }
+  .stats .a { color: var(--accent); }
+  .stats .k { color: var(--ink); }
+  .timeline-stack {
+    position: relative;
+    top: 66px;
+  }
+  .review {
+    width: 342px;
+    min-height: 51px;
+    background: var(--card);
+    border-radius: 18px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    overflow: hidden;
+  }
+  .month { font-size: 15px; font-weight: 600; margin: 20px 0 10px; }
+  .card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 15px 16px 13px;
+    margin-bottom: 10px;
+  }
+  .card-name { font-size: 15.5px; font-weight: 600; }
+  .quote { font-size: 13px; color: var(--gray); line-height: 1.6; margin-top: 9px; }
+  .state { font-size: 11.5px; color: var(--gray-faint); margin-top: 10px; }
   .panel {
     background: #fff;
     border: 1px solid #EEE8E4;
@@ -41,22 +131,9 @@
     top: 18px;
     max-height: calc(100vh - 36px);
     overflow: auto;
-    grid-column: 3;
-    order: 2;
   }
   h1 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-  .hint { font-size: 12.5px; color: var(--gray); line-height: 1.7; margin-bottom: 14px; }
-  .tabs { display: grid; grid-template-columns: 1fr; gap: 7px; margin-bottom: 16px; }
-  .tab {
-    border: 1px solid #E3DDDA;
-    background: #fff;
-    color: var(--ink-soft);
-    border-radius: 8px;
-    padding: 9px 0;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .tab.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .hint { font-size: 12.5px; color: var(--gray); line-height: 1.7; margin-bottom: 16px; }
   .group { border-top: 1px solid #F0EAE6; padding-top: 14px; margin-top: 14px; }
   .group:first-of-type { border-top: 0; padding-top: 0; }
   .group-title { font-size: 13px; font-weight: 700; margin-bottom: 9px; }
@@ -65,7 +142,7 @@
   .ctl input { accent-color: var(--accent); width: 100%; }
   .val { font-size: 11.5px; color: var(--ink-soft); text-align: right; font-variant-numeric: tabular-nums; }
   .actions { display: flex; gap: 8px; margin-top: 16px; }
-  button.action {
+  button {
     border: 1px solid #D9D2D0;
     background: #fff;
     border-radius: 8px;
@@ -83,310 +160,90 @@
     font: 11.5px/1.75 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     white-space: pre-wrap;
   }
-  .preview-wrap {
-    display: grid;
-    grid-template-columns: 390px 390px;
-    gap: 22px;
-    grid-column: 1 / span 2;
-    order: 1;
-  }
-  .module-title {
-    font-size: 13px;
-    color: var(--gray);
-    margin: 0 0 10px 2px;
-    font-weight: 600;
-  }
-  .phone {
-    width: 390px;
-    min-height: 844px;
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: 34px;
-    overflow: hidden;
-    box-shadow: 0 16px 40px rgba(44, 36, 32, 0.10);
-    position: relative;
-  }
-  .screen {
-    display: block;
-    padding: 24px 24px 92px;
-    min-height: 844px;
-    position: relative;
-  }
-  .screen.active { display: block; }
-  .top-row { display: flex; align-items: center; justify-content: space-between; }
-  .rel { position: relative; }
-  .page-title { font-weight: 700; letter-spacing: 0.3px; white-space: nowrap; }
-  .icons { display: flex; align-items: center; }
-  .round-btn {
-    border-radius: 50%;
-    background: #E6E4E6;
-    color: #1C1B1D;
-    display: grid;
-    place-items: center;
-    flex: 0 0 auto;
-  }
-  .avatar-text { font-weight: 500; }
-  .stats { color: var(--gray); white-space: nowrap; }
-  .stats b { font-weight: 600; }
-  .stats .a { color: var(--accent); }
-  .stats .k { color: var(--ink); }
-  .white-stack { position: relative; }
-  .review {
-    background: var(--card);
-    border-radius: 18px;
-    padding: 14px 16px;
-    font-size: 13px;
-    color: var(--ink-soft);
-    line-height: 1.65;
-  }
-  .month, .cat { font-size: 15px; font-weight: 600; margin: 20px 0 10px; }
-  .card, .row {
-    background: var(--card);
-    border-radius: 18px;
-    padding: 15px 16px 13px;
-    margin-bottom: 10px;
-  }
-  .card-name { font-size: 15.5px; font-weight: 600; }
-  .quote { font-size: 13px; color: var(--gray); line-height: 1.6; margin-top: 9px; }
-  .state { font-size: 11.5px; color: var(--gray-faint); margin-top: 10px; }
-  .filters { display: flex; gap: 8px; overflow: hidden; flex-wrap: wrap; }
-  .filter {
-    font-size: 12.5px;
-    color: var(--gray-faint);
-    font-weight: 600;
-    padding: 6px 14px;
-    background: var(--card);
-    border-radius: 20px;
-    white-space: nowrap;
-  }
-  .filter.on { color: var(--paper); background: var(--ink); }
-  .row-top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
-  .row .name { font-size: 14.5px; font-weight: 600; }
-  .row .time { font-size: 12px; color: var(--gray); white-space: nowrap; }
-  .row .sub { font-size: 11.5px; color: var(--gray-faint); margin-top: 6px; }
-  .bottom-box {
-    position: absolute;
-    left: 24px;
-    right: 24px;
-    bottom: 86px;
-    background: var(--card);
-    border-radius: 18px;
-    overflow: hidden;
-  }
-  .settings-row {
-    padding: 15px 16px;
-    border-bottom: 1px solid #F0E9E7;
-    font-size: 14.5px;
-    display: flex;
-    justify-content: space-between;
-  }
-  .settings-row:last-child { border-bottom: 0; }
-  .tabbar {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--paper);
-    padding: 12px 52px 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .fab {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: -18px;
-    width: 54px;
-    height: 54px;
-    border-radius: 50%;
-    background: var(--card);
-    color: var(--accent);
-    display: grid;
-    place-items: center;
-    font-size: 28px;
-    font-weight: 300;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.10);
-  }
-  .nav { font-size: 12.5px; color: var(--gray-faint); font-weight: 600; }
-  .nav.on { color: var(--ink); }
   @media (max-width: 860px) {
     .layout { grid-template-columns: 1fr; width: min(420px, calc(100vw - 24px)); }
-    .panel { position: static; max-height: none; grid-column: auto; }
-    .preview-wrap { grid-template-columns: 1fr; grid-column: auto; }
     .phone { width: min(390px, 100%); }
+    .panel { position: static; max-height: none; }
   }
 </style>
 </head>
 <body>
 <div class="layout">
-  <aside class="panel">
-    <h1>布局实时调整器</h1>
-    <p class="hint">时间线页已经写死。这里拖动滑块时，实际是在调整索引页的三个模块；数值会自动保存，点「复制数值」可以把当前方案发给开发者。</p>
-    <div class="tabs">
-      <button class="tab on" data-page="index">索引页</button>
-    </div>
-    <div id="controls"></div>
-    <div class="actions">
-      <button class="action" onclick="resetCurrent()">重置本页</button>
-      <button class="action primary" onclick="copyValues()">复制数值</button>
-    </div>
-    <pre id="out"></pre>
-  </aside>
-
-  <main class="preview-wrap">
-    <div class="preview-module">
-      <p class="module-title">写死的时间线页</p>
-      <div class="phone">
-      <section class="screen active" id="page-home">
+  <main>
+    <p class="module-title">时间线页预览</p>
+    <div class="phone">
+      <section class="screen">
         <div class="top-row">
-          <p class="page-title rel" id="home-title">决策日记</p>
-          <div class="icons rel" id="home-icons">
-            <div class="round-btn" id="home-search-btn">
-              <svg id="home-search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="15.8" y1="15.8" x2="21" y2="21"/></svg>
+          <p class="page-title">决策日记</p>
+          <div class="icons">
+            <div class="round-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="15.8" y1="15.8" x2="21" y2="21"/></svg>
             </div>
-            <div class="round-btn" id="home-me-btn"><span class="avatar-text" id="home-me-text">我</span></div>
+            <div class="round-btn"><span class="avatar-text">我</span></div>
           </div>
         </div>
-        <p class="stats rel" id="home-stats"><b class="a">2</b> 在想　<b class="k">6</b> 陪伴中　陪伴你 <b class="k">18</b> 天</p>
-        <div class="white-stack" id="home-white">
-          <div class="review">降噪耳机已经陪你三个月了，感觉如何？</div>
+        <p class="stats" id="home-stats"><b class="a">2</b> 在想　<b class="k">6</b> 陪伴中　陪伴你 <b class="k">18</b> 天</p>
+        <div class="timeline-stack" id="timeline-stack">
+          <div class="review" id="review-card">降噪耳机已经陪你三个月了，感觉如何？</div>
           <p class="month">七月</p>
           <div class="card"><p class="card-name">Sony A7C II 相机</p><p class="quote">想要一台能随身带出门的相机，但不确定会不会吃灰。</p><p class="state">犹豫中 · 第 23 天</p></div>
           <div class="card"><p class="card-name">Kindle 阅读器</p><p class="quote">手机上读不进书，也许换个设备能好一点？</p><p class="state">犹豫中 · 第 6 天</p></div>
         </div>
-        <div class="bottom-box" id="home-bottom">
-          <div class="settings-row"><span>回访提醒</span><span>每周至多一条</span></div>
-          <div class="settings-row"><span>导出全部记录</span><span></span></div>
-        </div>
       </section>
-      </div>
-    </div>
-
-    <div class="preview-module">
-      <p class="module-title">索引页预览</p>
-      <div class="phone">
-      <section class="screen" id="page-index">
-        <div class="top-row">
-          <p class="page-title rel" id="index-title">索引</p>
-          <div class="icons rel" id="index-icons">
-            <div class="round-btn" id="index-search-btn">
-              <svg id="index-search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="15.8" y1="15.8" x2="21" y2="21"/></svg>
-            </div>
-            <div class="round-btn" id="index-me-btn"><span class="avatar-text" id="index-me-text">我</span></div>
-          </div>
-        </div>
-        <p class="stats rel" id="index-sub">你认真想过 10 件东西</p>
-        <div class="filters rel" id="index-filters">
-          <span class="filter on">全部</span>
-          <span class="filter">陪伴中</span>
-          <span class="filter">犹豫中</span>
-          <span class="filter">没有买</span>
-          <span class="filter">闲置</span>
-          <span class="filter">告别</span>
-        </div>
-        <div class="white-stack" id="index-white">
-          <p class="cat">数码 · 5</p>
-          <div class="row"><div class="row-top"><span class="name">Sony A7C II 相机</span><span class="time">犹豫中 · 第 23 天</span></div><p class="sub">记于 · 六月二十四日</p></div>
-          <div class="row"><div class="row-top"><span class="name">降噪耳机</span><span class="time">陪伴你 · 三个月</span></div><p class="sub">上次回访 · 三个月前</p></div>
-          <p class="cat">家居 · 3</p>
-          <div class="row"><div class="row-top"><span class="name">人体工学椅</span><span class="time">想清楚了，没有买</span></div><p class="sub">想清楚于 · 六月</p></div>
-        </div>
-        <div class="bottom-box" id="index-bottom">
-          <div class="settings-row"><span>索引筛选</span><span>全部</span></div>
-          <div class="settings-row"><span>底部白框</span><span>上下可调</span></div>
-        </div>
-        <div class="tabbar"><span class="nav">时间线</span><div class="fab">＋</div><span class="nav on">索引</span></div>
-      </section>
-      </div>
     </div>
   </main>
+
+  <aside class="panel">
+    <h1>时间线布局调整器</h1>
+    <p class="hint">顶部标题和搜索/我按钮使用当前写死位置。这里专门调整统计行与“降噪耳机”白色框。</p>
+    <div id="controls"></div>
+    <div class="actions">
+      <button onclick="resetValues()">重置</button>
+      <button class="primary" onclick="copyValues()">复制数值</button>
+    </div>
+    <pre id="out"></pre>
+  </aside>
 </div>
 
 <script>
-const CONFIG = {
-  index: [
-    { title: "你认真想过 10 件东西：上下左右相对位置与大小", keys: [
-      ["indexSubX", "左右", -80, 80, 0], ["indexSubY", "上下", -30, 140, 47.5], ["indexSubSize", "字号", 10, 22, 12.5]
-    ] },
-    { title: "全部 到 告别：上下与大小调整", keys: [
-      ["indexFiltersY", "上下", -30, 160, 63.5], ["indexFilterSize", "字号", 10, 18, 11.5], ["indexFilterH", "高度", 24, 46, 28]
-    ] },
-    { title: "数码与白框：上下调整", keys: [
-      ["indexWhiteY", "上下", -40, 190, 53.5]
-    ] }
-  ]
-};
-
-const FIXED = {
-  homeTitleX: 0, homeTitleY: 37.5, homeTitleSize: 29,
-  homeIconsX: 0, homeIconsY: 38, homeIconSize: 30, homeIconGap: 10,
-  homeStatsX: 0, homeStatsY: 48.5, homeStatsSize: 12.5,
-  homeWhiteY: 66,
-  indexTitleX: 0, indexTitleY: 37.5, indexTitleSize: 29,
-  indexIconsX: 0, indexIconsY: 38, indexIconSize: 30, indexIconGap: 10
-};
+const CONFIG = [
+  { title: "2 在想 到 陪伴你 18 天：大小与上下相对位置", keys: [
+    ["statsY", "上下", -30, 140, 46], ["statsSize", "字号", 10, 22, 12.5]
+  ] },
+  { title: "降噪耳机白色框：大小与上下相对位置", keys: [
+    ["reviewY", "上下", -40, 180, 57.5], ["reviewW", "宽度", 220, 342, 342], ["reviewH", "高度", 42, 110, 51]
+  ] }
+];
+const STORAGE_KEY = "decision-layout-timeline-v2";
 const defaults = {};
-Object.values(CONFIG).flat().forEach(group => group.keys.forEach(k => defaults[k[0]] = k[4]));
-const STORAGE_KEY = "decision-layout-index-v4";
-let values = { ...FIXED, ...defaults, ...(JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {}) };
-let page = "index";
+CONFIG.forEach(group => group.keys.forEach(k => defaults[k[0]] = k[4]));
+let values = { ...defaults, ...(JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {}) };
 
 function px(v) { return v + "px"; }
-function setBox(el, x, y) {
-  el.style.left = px(values[x]);
-  el.style.top = px(values[y]);
-}
-function setRound(prefix, sizeKey, gapKey) {
-  const size = values[sizeKey];
-  [prefix + "-search-btn", prefix + "-me-btn"].forEach(id => {
-    const el = document.getElementById(id);
-    el.style.width = px(size);
-    el.style.height = px(size);
-  });
-  document.getElementById(prefix + "-icons").style.gap = px(values[gapKey]);
-  const svg = document.getElementById(prefix + "-search-svg");
-  const svgSize = Math.round(size * 0.48);
-  svg.setAttribute("width", svgSize);
-  svg.setAttribute("height", svgSize);
-  document.getElementById(prefix + "-me-text").style.fontSize = px(Math.round(size * 0.34));
-}
-function draw() {
-  setBox(document.getElementById("home-title"), "homeTitleX", "homeTitleY");
-  document.getElementById("home-title").style.fontSize = px(values.homeTitleSize);
-  setBox(document.getElementById("home-icons"), "homeIconsX", "homeIconsY");
-  setRound("home", "homeIconSize", "homeIconGap");
-  setBox(document.getElementById("home-stats"), "homeStatsX", "homeStatsY");
-  document.getElementById("home-stats").style.fontSize = px(values.homeStatsSize);
-  document.getElementById("home-white").style.top = px(values.homeWhiteY);
 
-  setBox(document.getElementById("index-title"), "indexTitleX", "indexTitleY");
-  document.getElementById("index-title").style.fontSize = px(values.indexTitleSize);
-  setBox(document.getElementById("index-icons"), "indexIconsX", "indexIconsY");
-  setRound("index", "indexIconSize", "indexIconGap");
-  setBox(document.getElementById("index-sub"), "indexSubX", "indexSubY");
-  document.getElementById("index-sub").style.fontSize = px(values.indexSubSize);
-  document.getElementById("index-filters").style.left = "0px";
-  document.getElementById("index-filters").style.top = px(values.indexFiltersY);
-  document.querySelectorAll("#index-filters .filter").forEach(el => {
-    el.style.fontSize = px(values.indexFilterSize);
-    el.style.minHeight = px(values.indexFilterH);
-    el.style.display = "inline-flex";
-    el.style.alignItems = "center";
-  });
-  document.getElementById("index-white").style.top = px(values.indexWhiteY);
+function draw() {
+  const stats = document.getElementById("home-stats");
+  stats.style.top = px(values.statsY);
+  stats.style.fontSize = px(values.statsSize);
+
+  const stack = document.getElementById("timeline-stack");
+  stack.style.top = px(values.reviewY);
+  const review = document.getElementById("review-card");
+  review.style.width = px(values.reviewW);
+  review.style.minHeight = px(values.reviewH);
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
   renderOutput();
 }
+
 function renderControls() {
-  document.getElementById("controls").innerHTML = CONFIG[page].map(group =>
+  document.getElementById("controls").innerHTML = CONFIG.map(group =>
     '<div class="group"><p class="group-title">' + group.title + '</p>' +
     group.keys.map(k =>
       '<div class="ctl"><label>' + k[1] + '</label><input type="range" id="' + k[0] + '" min="' + k[2] + '" max="' + k[3] + '" step="0.5" value="' + values[k[0]] + '"><span class="val" id="' + k[0] + '-val">' + values[k[0]] + 'px</span></div>'
     ).join("") + '</div>'
   ).join("");
-  CONFIG[page].flatMap(g => g.keys).forEach(k => {
+  CONFIG.flatMap(group => group.keys).forEach(k => {
     const el = document.getElementById(k[0]);
     el.addEventListener("input", () => {
       values[k[0]] = parseFloat(el.value);
@@ -395,32 +252,29 @@ function renderControls() {
     });
   });
 }
+
 function renderOutput() {
-  const lines = CONFIG[page].map(group => {
-    const nums = group.keys.map(k => k[1] + " " + values[k[0]] + "px").join("   ");
-    return group.title + "\n" + nums;
-  });
-  document.getElementById("out").textContent = "页面：" + pageName(page) + "\n\n" + lines.join("\n\n");
+  document.getElementById("out").textContent =
+    "页面：时间线页\n\n" +
+    "2 在想 到 陪伴你 18 天：大小与上下相对位置\n" +
+    "上下 " + values.statsY + "px   字号 " + values.statsSize + "px\n\n" +
+    "降噪耳机白色框：大小与上下相对位置\n" +
+    "上下 " + values.reviewY + "px   宽度 " + values.reviewW + "px   高度 " + values.reviewH + "px";
 }
-function pageName() { return "索引页"; }
-function resetCurrent() {
-  CONFIG[page].flatMap(g => g.keys).forEach(k => values[k[0]] = defaults[k[0]]);
+
+function resetValues() {
+  values = { ...defaults };
   renderControls();
   draw();
 }
+
 function copyValues() {
-  const text = document.getElementById("out").textContent;
-  navigator.clipboard.writeText(text).then(() => alert("已复制当前页数值。"), () => alert("复制失败，可以手动选中下方数值复制。"));
+  navigator.clipboard.writeText(document.getElementById("out").textContent).then(
+    () => alert("已复制当前数值。"),
+    () => alert("复制失败，可以手动选中下方数值复制。")
+  );
 }
-document.querySelectorAll(".tab").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach(b => b.classList.remove("on"));
-    btn.classList.add("on");
-    page = btn.dataset.page;
-    renderControls();
-    draw();
-  });
-});
+
 renderControls();
 draw();
 </script>
