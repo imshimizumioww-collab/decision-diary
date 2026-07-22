@@ -186,19 +186,23 @@
   #screen-timeline .header {
     position: relative;
     left: 0;
-    top: 46px;
+    top: 44.5px;
   }
   #screen-timeline .page-sub {
     font-size: 12.5px;
   }
-  #screen-timeline .review-line,
+  #screen-timeline .review-line {
+    position: relative;
+    top: 44px;
+    width: 342px;
+    min-height: 68.5px;
+  }
   #screen-timeline #timeline-list {
     position: relative;
-    top: 57.5px;
+    top: 35px;
   }
-  #screen-timeline .review-line {
+  #screen-timeline .card {
     width: 342px;
-    min-height: 51px;
   }
 
   #screen-index .page-title {
@@ -1120,6 +1124,20 @@ restore();
 applyProfile();
 renderTimeline();
 renderIndex();
+
+window.addEventListener("message", (event) => {
+  const data = event.data || {};
+  if (data.type !== "timeline-layout-adjust" || typeof data.css !== "string") return;
+  let style = document.getElementById("timeline-adjuster-style");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "timeline-adjuster-style";
+    document.head.appendChild(style);
+  }
+  style.textContent = data.css;
+  showScreen("timeline");
+  document.getElementById("tabbar").style.display = "";
+});
 
 /* PWA：注册 service worker，让它可安装到主屏、离线可用。
    file:// 直接打开时没有 SW 环境，静默跳过，不影响本地预览。 */
