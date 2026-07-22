@@ -63,6 +63,21 @@
   .tab.on { color: var(--ink); }
   .fab { position: absolute; left: 50%; transform: translateX(-50%); top: -18px; width: 54px; height: 54px; border-radius: 50%; background: var(--card); color: var(--accent); font-size: 28px; font-weight: 300; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 5px rgba(0,0,0,0.10); cursor: pointer; }
   .menu-btn { font-size: 17px; color: var(--gray); cursor: pointer; padding: 2px 8px 2px 0; }
+  .home-top { display: flex; justify-content: space-between; align-items: center; padding: 18px 0 0; }
+  .home-icons { display: flex; gap: 12px; align-items: center; }
+  .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--card); display: flex; align-items: center; justify-content: center; color: var(--ink-soft); cursor: pointer; overflow: hidden; flex-shrink: 0; }
+  .icon-btn:active { opacity: 0.8; }
+  .icon-btn img { width: 100%; height: 100%; object-fit: cover; }
+  .icon-btn .av-ph { font-size: 13px; color: var(--gray-light); }
+  .search-bar { display: flex; align-items: center; gap: 12px; padding-top: 8px; }
+  .search-field { flex: 1; display: flex; align-items: center; gap: 8px; background: var(--card); border-radius: 12px; padding: 10px 12px; }
+  .search-field svg { flex-shrink: 0; color: var(--gray-light); }
+  .search-field input { flex: 1; background: transparent; border: none; outline: none; font-size: 16px; color: var(--ink); }
+  .search-field input::placeholder { color: var(--gray-faint); }
+  .search-cancel { font-size: 15px; color: var(--accent); cursor: pointer; flex-shrink: 0; }
+  .search-cat-title { font-size: 20px; font-weight: 700; margin: 28px 0 4px; }
+  .search-catrow { display: flex; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 15px; color: var(--ink); cursor: pointer; }
+  .search-catrow svg { color: var(--ink-soft); }
   .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.25); display: none; z-index: 20; }
   .scrim.show { display: block; }
   .drawer { position: fixed; top: 0; bottom: 0; left: 0; width: 82%; max-width: 320px; background: var(--paper); z-index: 21; transform: translateX(-105%); transition: transform .28s ease; padding: calc(30px + env(safe-area-inset-top)) 24px 24px; overflow-y: auto; }
@@ -103,7 +118,11 @@
   .photo-preview { width: 88px; height: 88px; object-fit: cover; border-radius: 12px; margin-top: 12px; border: 1px solid var(--line); display: none; }
   .detail-actions { margin-top: 36px; display: flex; gap: 10px; flex-wrap: wrap; }
   .compose { margin-top: 24px; display: none; }
-  .compose-hint { font-size: 12px; color: var(--gray-light); margin-top: 12px; display: none; }
+  .compose .create-area { background: var(--card); border-radius: 18px; padding: 15px 16px; margin-top: 0; min-height: 140px; }
+  .compose .photo-line { padding-left: 16px; }
+  .compose .photo-preview { margin-left: 16px; }
+  .compose .create-actions { padding-left: 16px; }
+  .compose-hint { font-size: 12px; color: var(--gray-light); margin-top: 12px; display: none; padding-left: 16px; }
   .del-link { font-size: 12px; color: var(--gray-light); padding: 14px 0 4px; cursor: pointer; }
   .del-warn { font-size: 13px; color: var(--ink-soft); margin-top: 12px; }
   .del-hint { font-size: 12px; color: var(--gray-light); margin-top: 8px; line-height: 1.8; }
@@ -145,17 +164,27 @@
 <div class="app">
 
   <div class="screen active" id="screen-timeline">
-    <div class="topbar"><span class="menu-btn" onclick="openDrawer()">☰</span><span></span></div>
-    <div class="header">
+    <div class="home-top">
       <p class="page-title">决策日记</p>
-      <p class="page-sub" id="home-stats"></p>
+      <div class="home-icons">
+        <div class="icon-btn" onclick="openSearch()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+        </div>
+        <div class="icon-btn" onclick="openDrawer()">
+          <img id="home-avatar" alt="" style="display:none">
+          <span class="av-ph" id="home-avatar-ph">我</span>
+        </div>
+      </div>
+    </div>
+    <div class="header" style="padding-top: 8px;">
+      <p class="page-sub" id="home-stats" style="margin-top: 0;"></p>
     </div>
     <p class="review-line" onclick="openDetail('headphone')">降噪耳机已经陪你三个月了，感觉如何？</p>
     <div id="timeline-list"></div>
   </div>
 
   <div class="screen" id="screen-index">
-    <div class="topbar"><span class="menu-btn" onclick="openDrawer()">☰</span><span class="side">搜索</span></div>
+    <div class="topbar"><span class="menu-btn" onclick="openDrawer()">☰</span><span class="side" onclick="openSearch()">搜索</span></div>
     <div class="header">
       <p class="page-title">索引</p>
       <p class="page-sub" id="index-sub"></p>
@@ -169,6 +198,24 @@
       <span class="filter" data-f="ended">告别</span>
     </div>
     <div id="index-list"></div>
+  </div>
+
+  <div class="screen" id="screen-search">
+    <div class="search-bar">
+      <div class="search-field">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+        <input id="search-input" placeholder="搜索" oninput="runSearch()">
+      </div>
+      <span class="search-cancel" onclick="closeSearch()">取消</span>
+    </div>
+    <div id="search-default">
+      <p class="search-cat-title">类别</p>
+      <div class="search-catrow">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="16" y2="12"/><line x1="4" y1="17" x2="12" y2="17"/></svg>
+        <span>仅文本</span>
+      </div>
+    </div>
+    <div id="search-results"></div>
   </div>
 
   <div class="screen" id="screen-detail">
@@ -631,7 +678,12 @@ function applyProfile() {
     img.src = profile.avatar;
     img.style.display = "block";
     document.getElementById("me-avatar-ph").style.display = "none";
+    const h = document.getElementById("home-avatar");
+    h.src = profile.avatar;
+    h.style.display = "block";
+    document.getElementById("home-avatar-ph").style.display = "none";
   }
+  if (profile.name) document.getElementById("home-avatar-ph").textContent = profile.name.slice(0, 1);
 }
 function setAvatar() {
   const inp = document.getElementById("me-photo");
@@ -719,6 +771,41 @@ function exitDelMode() {
   delMode = false;
   document.getElementById("d-del-hint").style.display = "none";
   renderEntries(items[currentKey]);
+}
+
+function openSearch() {
+  lastScreen = document.querySelector(".screen.active").id.replace("screen-", "");
+  if (lastScreen === "search" || lastScreen === "detail" || lastScreen === "create") lastScreen = "timeline";
+  showScreen("search");
+  document.getElementById("tabbar").style.display = "none";
+  document.getElementById("search-input").value = "";
+  document.getElementById("search-results").innerHTML = "";
+  document.getElementById("search-default").style.display = "";
+  window.scrollTo(0, 0);
+  setTimeout(() => document.getElementById("search-input").focus(), 50);
+}
+function closeSearch() {
+  showScreen(lastScreen);
+  document.getElementById("tabbar").style.display = "";
+}
+function runSearch() {
+  const q = document.getElementById("search-input").value.trim();
+  const box = document.getElementById("search-results");
+  const def = document.getElementById("search-default");
+  if (!q) { box.innerHTML = ""; def.style.display = ""; return; }
+  def.style.display = "none";
+  const hits = Object.keys(items).filter(k => {
+    const v = items[k];
+    return v.name.includes(q) || (v.quote || "").includes(q) ||
+      v.entries.some(e => (e.text || "").includes(q));
+  });
+  box.innerHTML = hits.length ? hits.map(k => {
+    const v = items[k];
+    return `<div class="row" style="margin-top:10px" onclick="openDetail('${k}')">
+      <div class="row-top"><span class="name">${v.name}</span><span class="time">${v.state}</span></div>
+      <p class="sub">${v.sub}</p>
+    </div>`;
+  }).join("") : `<p class="empty-note">没有找到与「${q}」有关的记录。</p>`;
 }
 
 function openDrawer() {
