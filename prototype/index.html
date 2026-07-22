@@ -47,15 +47,16 @@
   .card .name { font-size: 15.5px; font-weight: 600; }
   .card .state { font-size: 11.5px; color: var(--gray-faint); margin-top: 10px; }
   .card .quote { font-size: 13px; color: var(--gray); line-height: 1.6; margin-top: 9px; }
-  .filters { display: flex; gap: 18px; padding: 6px 0 4px; overflow-x: auto; }
-  .filter { font-size: 13px; color: var(--gray-faint); font-weight: 600; padding-bottom: 6px; cursor: pointer; white-space: nowrap; }
-  .filter.on { color: var(--ink); }
-  .cat { font-size: 11.5px; color: var(--gray-mute); letter-spacing: 1px; margin: 22px 0 2px; font-weight: 600; }
-  .row { padding: 12px 0; border-bottom: 1px solid var(--line-faint); cursor: pointer; }
+  .filters { display: flex; gap: 8px; padding: 6px 0 4px; overflow-x: auto; flex-wrap: wrap; }
+  .filter { font-size: 12.5px; color: var(--gray-faint); font-weight: 600; padding: 6px 14px; cursor: pointer; white-space: nowrap; background: var(--card); border-radius: 20px; transition: all .15s; }
+  .filter.on { color: var(--paper); background: var(--ink); }
+  .cat { font-size: 15px; font-weight: 600; color: var(--ink); margin: 20px 0 10px; }
+  .row { background: var(--card); border-radius: 18px; padding: 14px 16px 12px; margin-bottom: 10px; cursor: pointer; transition: opacity .2s ease; }
+  .row:active { opacity: 0.85; }
   .row-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-  .row .name { font-size: 14.5px; }
+  .row .name { font-size: 14.5px; font-weight: 600; }
   .row .time { font-size: 12px; color: var(--gray); flex-shrink: 0; }
-  .row .sub { font-size: 11.5px; color: var(--gray-faint); margin-top: 4px; }
+  .row .sub { font-size: 11.5px; color: var(--gray-faint); margin-top: 6px; }
   .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--paper); }
   .tabbar-inner { max-width: 420px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 12px 52px max(18px, env(safe-area-inset-bottom)); position: relative; }
   .tab { font-size: 12.5px; color: var(--gray-faint); cursor: pointer; font-weight: 600; }
@@ -79,7 +80,7 @@
   .entry .kind { font-size: 11.5px; color: var(--gray-light); margin-left: 10px; }
   .entry .e-del { margin-left: auto; font-size: 13px; color: var(--gray-light); cursor: pointer; line-height: 1; padding: 3px 8px; border: 1px solid var(--line); border-radius: 7px; }
   .entry .text { font-size: 15px; line-height: 1.8; color: var(--ink); margin-top: 10px; }
-  .meta { margin-top: 40px; padding-top: 8px; }
+  .meta { margin-top: 40px; background: var(--card); border-radius: 18px; padding: 4px 16px 8px; }
   .meta summary { font-size: 12px; color: var(--gray-mute); padding: 10px 0; cursor: pointer; list-style: none; }
   .meta summary::-webkit-details-marker { display: none; }
   .meta .mrow { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; color: var(--gray); }
@@ -110,7 +111,7 @@
   .photo-line { margin-top: 16px; font-size: 12.5px; color: var(--gray-light); cursor: pointer; }
   .photo-line .picked { color: var(--ink-soft); }
   .entry img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; margin-top: 12px; display: block; }
-  .cal-wrap { margin-top: 20px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 14px 14px; }
+  .cal-wrap { margin-top: 20px; background: var(--card); border-radius: 18px; padding: 16px 14px 14px; }
   .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
   .cal-title { font-family: var(--serif); font-size: 15px; color: var(--ink); letter-spacing: 1px; }
   .cal-arrow { font-size: 18px; color: var(--gray); cursor: pointer; padding: 4px 10px; user-select: none; }
@@ -133,8 +134,9 @@
   .avatar-ph { width: 72px; height: 72px; border-radius: 50%; border: 1px dashed var(--gray-faint); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--gray-faint); cursor: pointer; text-align: center; line-height: 1.5; }
   .me-name { background: transparent; border: none; outline: none; font-size: 19px; font-weight: 600; color: var(--ink); width: 100%; padding: 0; position: relative; top: -2px; }
   .me-name::placeholder { color: var(--gray-faint); }
-  .settings-group { margin-top: 28px; }
-  .settings-row { padding: 15px 0; border-bottom: 1px solid var(--line-faint); font-size: 14.5px; color: var(--ink); display: flex; justify-content: space-between; }
+  .settings-group { margin-top: 28px; background: var(--card); border-radius: 18px; overflow: hidden; }
+  .settings-row { padding: 15px 16px; border-bottom: 1px solid var(--line-faint); font-size: 14.5px; color: var(--ink); display: flex; justify-content: space-between; }
+  .settings-row:last-child { border-bottom: none; }
   .settings-row span:last-child { color: var(--gray-faint); font-size: 13px; }
   .empty-note { font-family: var(--serif); font-size: 13.5px; color: var(--gray-light); line-height: 1.8; margin-top: 40px; text-align: center; }
 </style>
@@ -240,7 +242,7 @@
 
 <div class="scrim" id="scrim" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
-  <div style="display: flex; align-items: center; gap: 18px;" id="me-head">
+  <div style="display: flex; align-items: center; gap: 18px; background: var(--card); border-radius: 18px; padding: 18px 16px;" id="me-head">
     <div id="me-avatar-box">
       <img class="avatar" id="me-avatar" alt="" onclick="document.getElementById('me-photo').click()">
       <div class="avatar-ph" id="me-avatar-ph" onclick="document.getElementById('me-photo').click()">添加<br>照片</div>
