@@ -81,10 +81,14 @@
   .scrim { position: fixed; inset: 0; background: transparent; display: none; z-index: 20; }
   .scrim.show { display: block; }
   body.sheet-open { overflow: hidden; height: 100vh; background: #000; }
+  .sheet-backdrop { position: fixed; inset: 0; background: #000; display: none; z-index: 1; }
+  body.sheet-open .sheet-backdrop { display: block; }
   #stage { min-height: 100vh; background: var(--paper); transform-origin: 50% 0; transition: transform .32s cubic-bezier(.32,.72,.35,1), border-radius .32s ease; }
-  body.sheet-open #stage { transform: translateY(34px) scale(0.94); border-radius: 14px; overflow: hidden; height: 100vh; }
+  body.sheet-open #stage { position: relative; z-index: 2; transform: translateY(34px) scale(0.94); border-radius: 14px; overflow: hidden; height: 100vh; }
   .drawer { position: fixed; left: 0; right: 0; bottom: 0; top: max(44px, calc(env(safe-area-inset-top) + 10px)); background: #F0ECEA; z-index: 21; transform: translateY(103%); transition: transform .32s cubic-bezier(.32,.72,.35,1); padding: 10px 24px 40px; overflow-y: auto; border-radius: 16px 16px 0 0; }
   .drawer.show { transform: translateY(0); }
+  .item-page { position: fixed; inset: 0; background: var(--paper); z-index: 30; transform: translateX(100%); transition: transform .3s cubic-bezier(.32,.72,.35,1); padding: calc(env(safe-area-inset-top) + 16px) 24px 40px; overflow-y: auto; }
+  .item-page.show { transform: translateX(0); }
   .cp-section-title { font-size: 13px; color: var(--gray); font-weight: 500; margin: 26px 2px 10px; }
   .cp-section-title.first { margin-top: 10px; }
   .stat-card { border-radius: 20px; padding: 22px 22px 24px; background: linear-gradient(135deg, #8583E8 0%, #5E5CE6 100%); color: #fff; position: relative; overflow: hidden; }
@@ -291,6 +295,7 @@
 </style>
 </head>
 <body>
+<div class="sheet-backdrop"></div>
 <div id="stage">
 <div class="app">
 
@@ -486,6 +491,13 @@
   </div>
   <p class="cp-section-title" id="cp-day-label">这一天</p>
   <div id="cp-day-entries"></div>
+</div>
+
+<div class="item-page" id="item-page">
+  <p class="back" onclick="closeItemPage()">‹ 记录日历</p>
+  <p class="bio-name" id="ip-name"></p>
+  <p class="bio-state" id="ip-state"></p>
+  <div id="ip-entries"></div>
 </div>
 
 <div class="overlay" id="ritual" onclick="hideRitual()">
@@ -1119,11 +1131,11 @@ function entryDate(e) {
 }
 function buildDayMap() {
   const map = {};
-  Object.values(items).forEach(v => v.entries.forEach(e => {
+  Object.entries(items).forEach(([k, v]) => v.entries.forEach(e => {
     const dt = entryDate(e);
     if (!dt || dt.getFullYear() !== cpYear || dt.getMonth() !== cpMonth) return;
     const d = dt.getDate();
-    (map[d] = map[d] || []).push({ name: v.name, kind: e.kind, text: e.text });
+    (map[d] = map[d] || []).push({ key: k, name: v.name, kind: e.kind, text: e.text });
   }));
   return map;
 }
@@ -1166,7 +1178,7 @@ function cpShowDay(d) {
   const map = buildDayMap();
   const recs = map[d];
   box.innerHTML = recs ? recs.map(r =>
-    `<div style="background:var(--card);border-radius:16px;padding:13px 15px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;"><span style="font-size:14.5px;font-weight:600;color:var(--ink);">${r.name}</span><span style="font-size:11px;color:var(--gray-mute);">${r.kind}</span></div>${r.text ? `<p style="margin:8px 0 0;font-size:13px;color:var(--gray);line-height:1.6;">${r.text}</p>` : ""}</div>`
+    `<div onclick="openItemPage('${r.key}')" style="background:var(--card);border-radius:16px;padding:13px 15px;margin-bottom:10px;cursor:pointer;"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;"><span style="font-size:14.5px;font-weight:600;color:var(--ink);">${r.name}</span><span style="font-size:11px;color:var(--gray-mute);">${r.kind}</span></div>${r.text ? `<p style="margin:8px 0 0;font-size:13px;color:var(--gray);line-height:1.6;">${r.text}</p>` : ""}</div>`
   ).join("") : `<p class="cp-day-empty">这一天没有写下什么。</p>`;
 }
 function cnDayFull(d) {
@@ -1177,6 +1189,22 @@ function cnDayFull(d) {
   if (d === 30) return "三十";
   return "三十一";
 }
+function openItemPage(key) {
+  const v = items[key];
+  if (!v) return;
+  document.getElementById("ip-name").textContent = v.name;
+  document.getElementById("ip-state").textContent = v.state;
+  document.getElementById("ip-entries").innerHTML = v.entries.map(e =>
+    `<div class="entry"><div class="e-head"><span class="date">${e.date}</span><span class="kind">${e.kind}</span></div>${e.text ? `<p class="text">${e.text}</p>` : ""}${e.img ? `<img src="${e.img}">` : ""}</div>`
+  ).join("");
+  const p = document.getElementById("item-page");
+  p.scrollTop = 0;
+  requestAnimationFrame(() => p.classList.add("show"));
+}
+function closeItemPage() {
+  document.getElementById("item-page").classList.remove("show");
+}
+
 function calPageNav(dir) {
   cpMonth += dir; cpSel = null;
   if (cpMonth < 0) { cpMonth = 11; cpYear--; }
