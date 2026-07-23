@@ -682,7 +682,7 @@ function renderStats() {
   document.getElementById("home-stats").innerHTML =
     `<b style="color:var(--accent);font-weight:600">${nDeciding}</b> 在想　` +
     `<b style="color:var(--ink);font-weight:600">${nComp}</b> 陪伴中　` +
-    `陪伴你 <b style="color:var(--ink);font-weight:600">${dates.size}</b> 天`;
+    `<span onclick="openCalendar()" style="cursor:pointer">陪伴你 <b style="color:var(--ink);font-weight:600">${dates.size}</b> 天 <span style="color:var(--accent)">›</span></span>`;
 }
 
 let firstRecordDone = false;
@@ -983,6 +983,8 @@ function runSearch() {
     </div>`;
   }).join("") : `<p class="empty-note">没有找到与「${q}」有关的记录。</p>`;
 }
+
+function openCalendar() { /* 日历页待接入 */ }
 
 function openDrawer() {
   clearSheetInline();
