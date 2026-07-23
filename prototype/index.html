@@ -85,10 +85,14 @@
   body.sheet-open #stage { transform: translateY(34px) scale(0.94); border-radius: 14px; overflow: hidden; height: 100vh; }
   .drawer { position: fixed; left: 0; right: 0; bottom: 0; top: max(44px, calc(env(safe-area-inset-top) + 10px)); background: #F0ECEA; z-index: 21; transform: translateY(103%); transition: transform .32s cubic-bezier(.32,.72,.35,1); padding: 10px 24px 40px; overflow-y: auto; border-radius: 16px 16px 0 0; }
   .drawer.show { transform: translateY(0); }
-  .stat-card { border-radius: 18px; padding: 20px 20px 22px; background: linear-gradient(140deg, #9391EC 0%, #6B69D6 100%); color: #fff; margin-top: 6px; }
-  .stat-card .stat-num { font-size: 44px; font-weight: 700; line-height: 1; }
-  .stat-card .stat-label { font-size: 13px; opacity: 0.92; margin-top: 10px; }
-  .cp-wrap { margin-top: 24px; }
+  .cp-section-title { font-size: 13px; color: var(--gray); font-weight: 500; margin: 26px 2px 10px; }
+  .cp-section-title.first { margin-top: 10px; }
+  .stat-card { border-radius: 20px; padding: 22px 22px 24px; background: linear-gradient(135deg, #8583E8 0%, #5E5CE6 100%); color: #fff; position: relative; overflow: hidden; }
+  .stat-card::after { content: ""; position: absolute; right: -34px; top: -34px; width: 128px; height: 128px; border-radius: 50%; background: rgba(255,255,255,0.09); }
+  .stat-card .stat-num { font-size: 46px; font-weight: 700; line-height: 1; letter-spacing: -1px; position: relative; }
+  .stat-card .stat-label { font-size: 13px; opacity: 0.9; margin-top: 12px; position: relative; }
+  .cal-card { background: var(--card); border-radius: 18px; padding: 18px 16px 14px; }
+  .cp-wrap { margin-top: 0; }
   .cp-head { display: flex; justify-content: space-between; align-items: center; padding: 0 2px 14px; }
   .cp-head .cp-title { font-size: 15px; font-weight: 600; color: var(--ink); }
   .cp-head .cp-arrow { font-size: 18px; color: var(--gray); cursor: pointer; padding: 4px 12px; user-select: none; }
@@ -465,11 +469,13 @@
     <span class="sheet-title">记录日历</span>
     <span class="sheet-done" onclick="closeCalendar()">完成</span>
   </div>
+  <p class="cp-section-title first">统计</p>
   <div class="stat-card">
     <div class="stat-num" id="cp-num">0</div>
     <div class="stat-label" id="cp-label">今年，你认真想过的事</div>
   </div>
-  <div class="cp-wrap">
+  <p class="cp-section-title">日历</p>
+  <div class="cal-card">
     <div class="cp-head">
       <span class="cp-arrow" onclick="calPageNav(-1)">‹</span>
       <span class="cp-title" id="cp-title"></span>
@@ -478,10 +484,8 @@
     <div class="cp-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
     <div class="cp-grid" id="cp-grid"></div>
   </div>
-  <div class="cp-day">
-    <p class="cp-day-label" id="cp-day-label"></p>
-    <div id="cp-day-entries"></div>
-  </div>
+  <p class="cp-section-title" id="cp-day-label">这一天</p>
+  <div id="cp-day-entries"></div>
 </div>
 
 <div class="overlay" id="ritual" onclick="hideRitual()">
@@ -1153,7 +1157,7 @@ function cpPick(d) {
 function cpShowDay(d) {
   const lab = document.getElementById("cp-day-label");
   const box = document.getElementById("cp-day-entries");
-  if (!d) { lab.textContent = ""; box.innerHTML = `<p class="cp-day-empty">这个月还没有写下什么。</p>`; return; }
+  if (!d) { lab.textContent = "这一天"; box.innerHTML = `<p class="cp-day-empty">这个月还没有写下什么。</p>`; return; }
   cpSel = d;
   document.querySelectorAll("#cp-grid .cp-cell").forEach(c => {
     c.classList.toggle("sel", c.querySelector(".cp-num") && +c.querySelector(".cp-num").textContent === d && !c.classList.contains("empty"));
