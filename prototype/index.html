@@ -375,6 +375,7 @@
       <p class="photo-line" onclick="document.getElementById('c-photo').click()">添加一张图（可不填） <span id="c-photo-name"></span></p>
       <input type="file" accept="image/*" id="c-photo" style="display:none" onchange="pickPhoto('c')">
       <img class="photo-preview" id="c-photo-preview" alt="">
+      <p class="photo-line" id="c-date-line" onclick="toggleCreateCal()">记录时间 · 今天</p>
       <div id="c-cal-slot"></div>
       <div class="cal-wrap" id="c-cal-wrap">
         <div class="cal-manual">
@@ -736,8 +737,10 @@ function openCreate() {
   ["c-name", "c-why", "c-price", "c-cat"].forEach(id => document.getElementById(id).value = "");
   calReset();
   resetPhoto("c");
+  createCalUsed = false;
+  document.getElementById("c-date-line").textContent = "记录时间 · 今天";
   document.getElementById("c-cal-slot").appendChild(document.getElementById("c-cal-wrap"));
-  document.getElementById("c-cal-wrap").style.display = "";
+  document.getElementById("c-cal-wrap").style.display = "none";
   calSelected = null;
   renderCal();
   document.getElementById("cstep1").style.display = "";
@@ -771,7 +774,7 @@ function saveCreate() {
   const why = document.getElementById("c-why").value.trim() || "还没想好怎么说。";
   const price = document.getElementById("c-price").value.trim();
   const cat = document.getElementById("c-cat").value.trim() || "未分类";
-  const dateVal = calSelected;
+  const dateVal = createCalUsed ? calSelected : null;
   const dateCn = dateVal ? dateToCn(dateVal) : todayCn;
   const days = dateVal ? daysDiff(dateVal) : 1;
   if (!catOrder.includes(cat)) catOrder.push(cat);
@@ -1189,6 +1192,7 @@ function calPick(iso) {
   calMonth = parseInt(parts[1]) - 1;
   renderCal();
   syncComposeDateLabel();
+  syncCreateDateLabel();
 }
 function syncComposeDateLabel() {
   if (calSelected && document.getElementById("d-cal-slot").contains(document.getElementById("c-cal-wrap"))) {
@@ -1215,6 +1219,27 @@ function calManualGo() {
     }
     renderCal();
     syncComposeDateLabel();
+    syncCreateDateLabel();
+  }
+}
+
+let createCalUsed = false;
+function toggleCreateCal() {
+  const cal = document.getElementById("c-cal-wrap");
+  const slot = document.getElementById("c-cal-slot");
+  if (!slot.contains(cal) || cal.style.display === "none") {
+    slot.appendChild(cal);
+    cal.style.display = "";
+    createCalUsed = true;
+    if (!calSelected) calReset();
+    syncCreateDateLabel();
+  } else {
+    cal.style.display = "none";
+  }
+}
+function syncCreateDateLabel() {
+  if (calSelected && document.getElementById("c-cal-slot").contains(document.getElementById("c-cal-wrap"))) {
+    document.getElementById("c-date-line").textContent = "记录时间 · " + dateToCn(calSelected);
   }
 }
 
