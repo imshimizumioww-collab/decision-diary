@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>决策日记 · 时间线文字比例调整器</title>
+<style>
+  :root {
+    --paper: #F6F1F0;
+    --card: #FFFFFF;
+    --ink: #1D1A1A;
+    --ink-soft: #5E5757;
+    --gray: #8E8688;
+    --gray-faint: #BBB2B3;
+    --line: #EBE3E1;
+    --accent: #5E5CE6;
+    --sans: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    background: #FBFAF8;
+    color: var(--ink);
+    font-family: var(--sans);
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 420px minmax(330px, 390px);
+    gap: 28px;
+    width: min(880px, calc(100vw - 32px));
+    margin: 0 auto;
+    padding: 26px 0;
+    align-items: start;
+  }
+  .module-title {
+    font-size: 13px;
+    color: var(--gray);
+    margin: 0 0 10px 2px;
+    font-weight: 600;
+  }
+  .phone {
+    width: 420px;
+    height: 844px;
+    overflow: hidden;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+  }
+  .screen {
+    min-height: 844px;
+    padding: 24px 24px 90px;
+    position: relative;
+  }
+  .home-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 0 0;
+  }
+  .page-title {
+    position: relative;
+    left: 0;
+    top: 37.5px;
+    font-size: 29px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .home-icons {
+    position: relative;
+    left: 0;
+    top: 38px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .icon-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #E6E4E6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1C1B1D;
+  }
+  .icon-btn svg { width: 14px; height: 14px; }
+  .icon-btn .av-ph { font-size: 10px; font-weight: 500; }
+  .header {
+    position: relative;
+    left: 0;
+    top: 44.5px;
+    padding: 18px 0 14px;
+  }
+  .page-sub {
+    font-size: 12.5px;
+    color: var(--gray);
+    margin-top: 0;
+  }
+  .review-line {
+    position: relative;
+    top: 44px;
+    width: 100%;
+    min-height: 68.5px;
+    background: var(--card);
+    border-radius: 18px;
+    padding: 14px 16px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    overflow: hidden;
+  }
+  .review-text {
+    display: inline-block;
+    font-size: 13px;
+    line-height: 1.65;
+    transform: scale(1);
+    transform-origin: left center;
+    white-space: nowrap;
+  }
+  .timeline-list {
+    position: relative;
+    top: 35px;
+  }
+  .month {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 20px 0 10px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 15px 16px 13px;
+    margin-bottom: 10px;
+  }
+  .card .name { font-size: 15.5px; font-weight: 600; }
+  .card .quote { font-size: 13px; color: var(--gray); line-height: 1.6; margin-top: 9px; }
+  .card .state { font-size: 11.5px; color: var(--gray-faint); margin-top: 10px; }
+  .tabbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--paper);
+  }
+  .tabbar-inner {
+    max-width: 420px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 52px 18px;
+    position: relative;
+  }
+  .tab { font-size: 12.5px; color: var(--gray-faint); font-weight: 600; }
+  .tab.on { color: var(--ink); }
+  .fab {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: -18px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--accent);
+    font-size: 28px;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.10);
+  }
+  .panel {
+    background: #fff;
+    border: 1px solid #EEE8E4;
+    border-radius: 12px;
+    padding: 18px;
+    position: sticky;
+    top: 18px;
+  }
+  h1 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .hint { font-size: 12.5px; color: var(--gray); line-height: 1.7; margin-bottom: 16px; }
+  .group { border-top: 1px solid #F0EAE6; padding-top: 14px; margin-top: 14px; }
+  .group:first-of-type { border-top: 0; padding-top: 0; }
+  .group-title { font-size: 13px; font-weight: 700; margin-bottom: 9px; }
+  .ctl { display: grid; grid-template-columns: 64px 1fr 54px; gap: 9px; align-items: center; margin: 8px 0; }
+  .ctl label { color: var(--gray); font-size: 12px; }
+  .ctl input { accent-color: var(--accent); width: 100%; }
+  .val { font-size: 11.5px; color: var(--ink-soft); text-align: right; font-variant-numeric: tabular-nums; }
+  .actions { display: flex; gap: 8px; margin-top: 16px; }
+  button {
+    border: 1px solid #D9D2D0;
+    background: #fff;
+    border-radius: 8px;
+    padding: 9px 13px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  button.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  pre {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink-soft);
+    font: 11.5px/1.75 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    white-space: pre-wrap;
+  }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; width: min(420px, calc(100vw - 24px)); }
+    .panel { position: static; }
+    .phone { width: min(420px, 100%); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <main>
+    <p class="module-title">时间线页预览</p>
+    <div class="phone">
+      <div class="screen">
+        <div class="home-top">
+          <p class="page-title">决策日记</p>
+          <div class="home-icons">
+            <div class="icon-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="15.8" y1="15.8" x2="21" y2="21"/></svg>
+            </div>
+            <div class="icon-btn"><span class="av-ph">我</span></div>
+          </div>
+        </div>
+        <div class="header">
+          <p class="page-sub"><b style="color:var(--accent);font-weight:600">2</b> 在想　<b style="color:var(--ink);font-weight:600">6</b> 陪伴中　陪伴你 <b style="color:var(--ink);font-weight:600">18</b> 天</p>
+        </div>
+        <p class="review-line"><span class="review-text" id="review-text">降噪耳机已经陪你三个月了，感觉如何？</span></p>
+        <div class="timeline-list">
+          <p class="month">七月</p>
+          <div class="card"><p class="name">Sony A7C II 相机</p><p class="quote">想要一台能随身带出门的相机，但不确定会不会吃灰。</p><p class="state">犹豫中 · 第 23 天</p></div>
+          <div class="card"><p class="name">Kindle 阅读器</p><p class="quote">手机上读不进书，也许换个设备能好一点？</p><p class="state">犹豫中 · 第 6 天</p></div>
+        </div>
+        <div class="tabbar"><div class="tabbar-inner"><span class="tab on">时间线</span><div class="fab">＋</div><span class="tab">索引</span></div></div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="panel">
+    <h1>降噪耳机文字比例调整器</h1>
+    <p class="hint">只调整回访白框里这句话的整体比例。白框位置和大小保持当前 prototype 定稿。</p>
+    <div id="controls"></div>
+    <div class="actions">
+      <button onclick="resetValues()">重置</button>
+      <button class="primary" onclick="copyValues()">复制数值</button>
+    </div>
+    <pre id="out"></pre>
+  </aside>
+</div>
+
+<script>
+const CONFIG = [
+  { title: "降噪耳机白框文字：等比例大小", keys: [
+    ["reviewTextScale", "比例", 0.8, 1.6, 1, "x"]
+  ] }
+];
+const STORAGE_KEY = "decision-layout-review-text-scale-v1";
+const defaults = {};
+CONFIG.forEach(group => group.keys.forEach(k => defaults[k[0]] = k[4]));
+let values = { ...defaults, ...(JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {}) };
+
+function draw() {
+  document.getElementById("review-text").style.transform = "scale(" + values.reviewTextScale + ")";
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+  renderOutput();
+}
+
+function renderControls() {
+  document.getElementById("controls").innerHTML = CONFIG.map(group =>
+    '<div class="group"><p class="group-title">' + group.title + '</p>' +
+    group.keys.map(k =>
+      '<div class="ctl"><label>' + k[1] + '</label><input type="range" id="' + k[0] + '" min="' + k[2] + '" max="' + k[3] + '" step="0.01" value="' + values[k[0]] + '"><span class="val" id="' + k[0] + '-val">' + formatVal(values[k[0]]) + '</span></div>'
+    ).join("") + '</div>'
+  ).join("");
+  CONFIG.flatMap(group => group.keys).forEach(k => {
+    const el = document.getElementById(k[0]);
+    el.addEventListener("input", () => {
+      values[k[0]] = parseFloat(el.value);
+      document.getElementById(k[0] + "-val").textContent = formatVal(values[k[0]]);
+      draw();
+    });
+  });
+}
+
+function formatVal(v) {
+  return Number(v).toFixed(2) + "x";
+}
+
+function renderOutput() {
+  document.getElementById("out").textContent =
+    "页面：时间线页\n\n" +
+    "降噪耳机白框文字：等比例大小\n" +
+    "比例 " + formatVal(values.reviewTextScale);
+}
+
+function resetValues() {
+  values = { ...defaults };
+  renderControls();
+  draw();
+}
+
+function copyValues() {
+  navigator.clipboard.writeText(document.getElementById("out").textContent).then(
+    () => alert("已复制当前数值。"),
+    () => alert("复制失败，可以手动选中下方数值复制。")
+  );
+}
+
+renderControls();
+draw();
+</script>
+</body>
+</html>
