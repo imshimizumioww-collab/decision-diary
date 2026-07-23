@@ -85,6 +85,26 @@
   body.sheet-open #stage { transform: translateY(34px) scale(0.94); border-radius: 14px; overflow: hidden; height: 100vh; }
   .drawer { position: fixed; left: 0; right: 0; bottom: 0; top: max(44px, calc(env(safe-area-inset-top) + 10px)); background: #F0ECEA; z-index: 21; transform: translateY(103%); transition: transform .32s cubic-bezier(.32,.72,.35,1); padding: 10px 24px 40px; overflow-y: auto; border-radius: 16px 16px 0 0; }
   .drawer.show { transform: translateY(0); }
+  .stat-card { border-radius: 18px; padding: 20px 20px 22px; background: linear-gradient(140deg, #9391EC 0%, #6B69D6 100%); color: #fff; margin-top: 6px; }
+  .stat-card .stat-num { font-size: 44px; font-weight: 700; line-height: 1; }
+  .stat-card .stat-label { font-size: 13px; opacity: 0.92; margin-top: 10px; }
+  .cp-wrap { margin-top: 24px; }
+  .cp-head { display: flex; justify-content: space-between; align-items: center; padding: 0 2px 14px; }
+  .cp-head .cp-title { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .cp-head .cp-arrow { font-size: 18px; color: var(--gray); cursor: pointer; padding: 4px 12px; user-select: none; }
+  .cp-weekdays { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; font-size: 11px; color: var(--gray-mute); margin-bottom: 8px; }
+  .cp-grid { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; row-gap: 4px; }
+  .cp-cell { padding: 7px 0 3px; cursor: pointer; }
+  .cp-cell.empty { cursor: default; }
+  .cp-cell .cp-num { width: 32px; height: 32px; line-height: 32px; margin: 0 auto; border-radius: 50%; font-size: 14px; color: var(--ink-soft); }
+  .cp-cell.has .cp-num { color: var(--ink); font-weight: 600; }
+  .cp-cell.today .cp-num { background: var(--ink); color: var(--paper); }
+  .cp-cell.sel .cp-num { background: var(--accent); color: #fff; }
+  .cp-dot { display: block; width: 4px; height: 4px; border-radius: 50%; margin: 3px auto 0; background: var(--accent); }
+  .cp-dot.none { background: transparent; }
+  .cp-day { margin-top: 12px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .cp-day-label { font-size: 12px; color: var(--gray-mute); letter-spacing: 1px; margin-bottom: 12px; }
+  .cp-day-empty { font-size: 13px; color: var(--gray-faint); font-family: var(--serif-real); }
   .sheet-head { display: flex; align-items: center; justify-content: center; position: relative; padding: 12px 0 18px; }
   .sheet-head .sheet-title { font-size: 17px; font-weight: 600; color: var(--ink); }
   .sheet-head .sheet-done { position: absolute; right: 0; font-size: 16px; font-weight: 600; color: var(--ink); cursor: pointer; padding: 4px 0 4px 12px; }
@@ -436,6 +456,31 @@
   </div>
   <div class="settings-group">
     <div class="settings-row"><span>关于</span><span>0.1</span></div>
+  </div>
+</div>
+
+<div class="scrim" id="cal-scrim" onclick="closeCalendar()"></div>
+<div class="drawer" id="cal-sheet">
+  <div class="sheet-head">
+    <span class="sheet-title">记录日历</span>
+    <span class="sheet-done" onclick="closeCalendar()">完成</span>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num" id="cp-num">0</div>
+    <div class="stat-label" id="cp-label">今年，你认真想过的事</div>
+  </div>
+  <div class="cp-wrap">
+    <div class="cp-head">
+      <span class="cp-arrow" onclick="calPageNav(-1)">‹</span>
+      <span class="cp-title" id="cp-title"></span>
+      <span class="cp-arrow" onclick="calPageNav(1)">›</span>
+    </div>
+    <div class="cp-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+    <div class="cp-grid" id="cp-grid"></div>
+  </div>
+  <div class="cp-day">
+    <p class="cp-day-label" id="cp-day-label"></p>
+    <div id="cp-day-entries"></div>
   </div>
 </div>
 
@@ -984,43 +1029,45 @@ function runSearch() {
   }).join("") : `<p class="empty-note">没有找到与「${q}」有关的记录。</p>`;
 }
 
-function openCalendar() { /* 日历页待接入 */ }
+function openDrawer() { openSheet("drawer", "scrim"); }
+function closeDrawer() { closeSheet("drawer", "scrim"); }
+function openCalendar() {
+  renderCalendarPage();
+  openSheet("cal-sheet", "cal-scrim");
+}
+function closeCalendar() { closeSheet("cal-sheet", "cal-scrim"); }
 
-function openDrawer() {
-  clearSheetInline();
-  document.getElementById("scrim").classList.add("show");
-  document.getElementById("drawer").classList.add("show");
+function openSheet(sheetId, scrimId) {
+  clearSheetInline(sheetId);
+  document.getElementById(scrimId).classList.add("show");
+  document.getElementById(sheetId).classList.add("show");
   document.body.classList.add("sheet-open");
 }
-function closeDrawer() {
-  clearSheetInline();
-  document.getElementById("scrim").classList.remove("show");
-  document.getElementById("drawer").classList.remove("show");
+function closeSheet(sheetId, scrimId) {
+  clearSheetInline(sheetId);
+  document.getElementById(scrimId).classList.remove("show");
+  document.getElementById(sheetId).classList.remove("show");
   document.body.classList.remove("sheet-open");
 }
-function clearSheetInline() {
-  const st = document.getElementById("stage"), dw = document.getElementById("drawer");
+function clearSheetInline(sheetId) {
+  const st = document.getElementById("stage"), dw = document.getElementById(sheetId);
   st.style.transform = ""; st.style.borderRadius = ""; st.style.transition = "";
   dw.style.transform = ""; dw.style.transition = "";
 }
 
-(function () {
-  const dw = document.getElementById("drawer");
+function bindSheetDrag(sheetId, closeFn) {
+  const dw = document.getElementById(sheetId);
   const st = document.getElementById("stage");
   let startY = null, dragY = 0, dragging = false;
   dw.addEventListener("touchstart", e => {
-    startY = e.touches[0].clientY;
-    dragY = 0;
-    dragging = false;
+    startY = e.touches[0].clientY; dragY = 0; dragging = false;
   }, { passive: true });
   dw.addEventListener("touchmove", e => {
     if (startY === null) return;
     const dy = e.touches[0].clientY - startY;
     if (!dragging) {
       if (dy > 8 && dw.scrollTop <= 0) {
-        dragging = true;
-        dw.style.transition = "none";
-        st.style.transition = "none";
+        dragging = true; dw.style.transition = "none"; st.style.transition = "none";
       } else return;
     }
     e.preventDefault();
@@ -1028,25 +1075,110 @@ function clearSheetInline() {
     dw.style.transform = "translateY(" + dragY + "px)";
     const h = window.innerHeight;
     const p = Math.min(1, dragY / (h * 0.7));
-    const s = 0.94 + 0.06 * p;
-    const ty = 34 * (1 - p);
-    st.style.transform = "translateY(" + ty + "px) scale(" + s + ")";
+    st.style.transform = "translateY(" + (34 * (1 - p)) + "px) scale(" + (0.94 + 0.06 * p) + ")";
     st.style.borderRadius = (14 * (1 - p)) + "px";
   }, { passive: false });
   dw.addEventListener("touchend", () => {
     if (!dragging) { startY = null; return; }
     dw.style.transition = "";
     st.style.transition = "transform .32s cubic-bezier(.32,.72,.35,1), border-radius .32s ease";
-    if (dragY > window.innerHeight * 0.22) {
-      closeDrawer();
-    } else {
-      dw.style.transform = "";
-      st.style.transform = "";
-      st.style.borderRadius = "";
-    }
+    if (dragY > window.innerHeight * 0.22) closeFn();
+    else { dw.style.transform = ""; st.style.transform = ""; st.style.borderRadius = ""; }
     startY = null; dragging = false; dragY = 0;
   });
-})();
+}
+bindSheetDrag("drawer", closeDrawer);
+bindSheetDrag("cal-sheet", closeCalendar);
+
+/* ── 记录日历页 ── */
+let cpYear = now.getFullYear(), cpMonth = now.getMonth(), cpSel = null;
+const cnMonthIdx = m => cn.indexOf(m);
+function cnDayToNum(s) {
+  s = s.replace("日", "");
+  if (!s) return 0;
+  const map = { 一:1,二:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9,十:10 };
+  if (s === "十") return 10;
+  if (s.length === 1) return map[s] || 0;
+  if (s[0] === "十") return 10 + (map[s[1]] || 0);
+  if (s[1] === "十") { const t = map[s[0]] * 10; return s.length > 2 ? t + (map[s[2]] || 0) : t; }
+  return 0;
+}
+function entryDate(e) {
+  if (e.ts) return new Date(e.ts);
+  const m = e.date.match(/([一二三四五六七八九十]+)月([一二三四五六七八九十]+)日/);
+  if (!m) return null;
+  const mi = cnMonthIdx(m[1]);
+  const d = cnDayToNum(m[2]);
+  if (mi < 0 || !d) return null;
+  const yr = (e.date.match(/(20\d\d)\s*年/) || [])[1] || now.getFullYear();
+  return new Date(+yr, mi, d);
+}
+function buildDayMap() {
+  const map = {};
+  Object.values(items).forEach(v => v.entries.forEach(e => {
+    const dt = entryDate(e);
+    if (!dt || dt.getFullYear() !== cpYear || dt.getMonth() !== cpMonth) return;
+    const d = dt.getDate();
+    (map[d] = map[d] || []).push({ name: v.name, kind: e.kind, text: e.text });
+  }));
+  return map;
+}
+function renderCalendarPage() {
+  const yearItems = Object.values(items);
+  document.getElementById("cp-num").textContent = yearItems.length;
+  document.getElementById("cp-title").textContent = cpYear + " 年 " + cn[cpMonth] + "月";
+  const map = buildDayMap();
+  const first = new Date(cpYear, cpMonth, 1).getDay();
+  const days = new Date(cpYear, cpMonth + 1, 0).getDate();
+  let html = "";
+  for (let i = 0; i < first; i++) html += `<div class="cp-cell empty"></div>`;
+  for (let d = 1; d <= days; d++) {
+    const has = map[d];
+    const isToday = d === now.getDate() && cpMonth === now.getMonth() && cpYear === now.getFullYear();
+    const cls = ["cp-cell"];
+    if (has) cls.push("has");
+    if (isToday) cls.push("today");
+    if (cpSel === d) cls.push("sel");
+    html += `<div class="${cls.join(" ")}" onclick="cpPick(${d})"><div class="cp-num">${d}</div><span class="cp-dot ${has ? "" : "none"}"></span></div>`;
+  }
+  document.getElementById("cp-grid").innerHTML = html;
+  cpShowDay(cpSel || (map[now.getDate()] && cpMonth === now.getMonth() ? now.getDate() : firstKey(map)));
+}
+function firstKey(map) { const k = Object.keys(map); return k.length ? +k[0] : null; }
+function cpPick(d) {
+  cpSel = d;
+  document.querySelectorAll("#cp-grid .cp-cell").forEach(c => c.classList.remove("sel"));
+  renderCalendarPage();
+}
+function cpShowDay(d) {
+  const lab = document.getElementById("cp-day-label");
+  const box = document.getElementById("cp-day-entries");
+  if (!d) { lab.textContent = ""; box.innerHTML = `<p class="cp-day-empty">这个月还没有写下什么。</p>`; return; }
+  cpSel = d;
+  document.querySelectorAll("#cp-grid .cp-cell").forEach(c => {
+    c.classList.toggle("sel", c.querySelector(".cp-num") && +c.querySelector(".cp-num").textContent === d && !c.classList.contains("empty"));
+  });
+  lab.textContent = cn[cpMonth] + "月" + cnDayFull(d) + "日";
+  const map = buildDayMap();
+  const recs = map[d];
+  box.innerHTML = recs ? recs.map(r =>
+    `<div style="background:var(--card);border-radius:16px;padding:13px 15px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;"><span style="font-size:14.5px;font-weight:600;color:var(--ink);">${r.name}</span><span style="font-size:11px;color:var(--gray-mute);">${r.kind}</span></div>${r.text ? `<p style="margin:8px 0 0;font-size:13px;color:var(--gray);line-height:1.6;">${r.text}</p>` : ""}</div>`
+  ).join("") : `<p class="cp-day-empty">这一天没有写下什么。</p>`;
+}
+function cnDayFull(d) {
+  if (d <= 10) return ["一","二","三","四","五","六","七","八","九","十"][d-1];
+  if (d < 20) return "十" + ["一","二","三","四","五","六","七","八","九"][d-11];
+  if (d === 20) return "二十";
+  if (d < 30) return "二十" + ["一","二","三","四","五","六","七","八","九"][d-21];
+  if (d === 30) return "三十";
+  return "三十一";
+}
+function calPageNav(dir) {
+  cpMonth += dir; cpSel = null;
+  if (cpMonth < 0) { cpMonth = 11; cpYear--; }
+  if (cpMonth > 11) { cpMonth = 0; cpYear++; }
+  renderCalendarPage();
+}
 
 function showRitual(text, label, name) {
   document.getElementById("ritual-label").textContent = label || "决策日记";
