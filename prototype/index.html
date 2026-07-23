@@ -80,8 +80,11 @@
   .search-catrow svg { color: var(--ink-soft); }
   .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.25); display: none; z-index: 20; }
   .scrim.show { display: block; }
-  .drawer { position: fixed; top: 0; bottom: 0; left: 0; width: 82%; max-width: 320px; background: var(--paper); z-index: 21; transform: translateX(-105%); transition: transform .28s ease; padding: calc(30px + env(safe-area-inset-top)) 24px 24px; overflow-y: auto; }
-  .drawer.show { transform: translateX(0); }
+  .drawer { position: fixed; inset: 0; background: var(--paper); z-index: 21; transform: translateY(103%); transition: transform .32s cubic-bezier(.32,.72,.35,1); padding: calc(10px + env(safe-area-inset-top)) 24px 40px; overflow-y: auto; border-radius: 16px 16px 0 0; }
+  .drawer.show { transform: translateY(0); }
+  .sheet-head { display: flex; align-items: center; justify-content: center; position: relative; padding: 12px 0 18px; }
+  .sheet-head .sheet-title { font-size: 17px; font-weight: 600; color: var(--ink); }
+  .sheet-head .sheet-done { position: absolute; right: 0; font-size: 16px; font-weight: 600; color: var(--ink); cursor: pointer; padding: 4px 0 4px 12px; }
   .topbar { display: flex; justify-content: space-between; align-items: center; padding-top: 4px; }
   .topbar .side { font-size: 13px; color: var(--ink-soft); font-weight: 300; cursor: pointer; }
   .plus { font-size: 20px; }
@@ -399,6 +402,10 @@
 
 <div class="scrim" id="scrim" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
+  <div class="sheet-head">
+    <span class="sheet-title">设置</span>
+    <span class="sheet-done" onclick="closeDrawer()">完成</span>
+  </div>
   <div style="display: flex; align-items: center; gap: 18px; background: var(--card); border-radius: 18px; padding: 18px 16px;" id="me-head">
     <div id="me-avatar-box">
       <img class="avatar" id="me-avatar" alt="" onclick="document.getElementById('me-photo').click()">
@@ -1184,12 +1191,11 @@ renderIndex();
 if (profile.remind) document.getElementById("set-remind").textContent = profile.remind;
 updateSyncTime();
 
-/* PWA：注册 service worker，让它可安装到主屏、离线可用。
-   file:// 直接打开时没有 SW 环境，静默跳过，不影响本地预览。 */
+/* 原型迭代期不用 Service Worker——它的缓存反复导致“更新看不到”。
+   这里主动注销所有已注册的 SW 并清空缓存，保证每次都拿最新版。 */
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
-  });
+  navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+  if (window.caches) caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
 }
 </script>
 </body>
