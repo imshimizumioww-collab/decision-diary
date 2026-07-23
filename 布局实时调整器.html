@@ -3,226 +3,160 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>决策日记 · 索引布局调整器</title>
+<title>决策日记 · 真实索引调整器</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    min-height: 100vh;
-    background: #FBFAF8;
-    color: #1D1A1A;
+  :root {
+    --paper: #F6F1F0;
+    --card: #FFFFFF;
+    --ink: #1D1A1A;
+    --soft: #8E8688;
+    --line: #E8DFDD;
+    --accent: #5E5CE6;
+    --panel: #FBF8F7;
+    --shadow: 0 18px 60px rgba(34, 26, 25, 0.10);
     font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
   }
-  .layout {
-    display: grid;
-    grid-template-columns: 420px 420px minmax(330px, 380px);
-    gap: 22px;
-    width: min(1264px, calc(100vw - 32px));
-    margin: 0 auto;
-    padding: 26px 0;
-    align-items: start;
-  }
-  .module-title {
-    font-size: 13px;
-    color: #8E8688;
-    margin: 0 0 10px 2px;
-    font-weight: 600;
-  }
-  .preview-frame {
-    width: 420px;
-    height: 844px;
-    border: 1px solid #EBE3E1;
-    border-radius: 18px;
-    overflow: hidden;
-    background: #F6F1F0;
-  }
-  iframe {
-    width: 420px;
-    height: 844px;
-    border: 0;
-    display: block;
-    background: #F6F1F0;
-  }
-  .panel {
-    background: #fff;
-    border: 1px solid #EEE8E4;
-    border-radius: 12px;
-    padding: 18px;
-    position: sticky;
-    top: 18px;
-    max-height: calc(100vh - 36px);
-    overflow: auto;
-  }
-  h1 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-  .hint { font-size: 12.5px; color: #8E8688; line-height: 1.7; margin-bottom: 16px; }
-  .group { border-top: 1px solid #F0EAE6; padding-top: 14px; margin-top: 14px; }
-  .group:first-of-type { border-top: 0; padding-top: 0; }
-  .group-title { font-size: 13px; font-weight: 700; margin-bottom: 9px; }
-  .ctl { display: grid; grid-template-columns: 64px 1fr 54px; gap: 9px; align-items: center; margin: 8px 0; }
-  .ctl label { color: #8E8688; font-size: 12px; }
-  .ctl input { accent-color: #5E5CE6; width: 100%; }
-  .val { font-size: 11.5px; color: #5E5757; text-align: right; font-variant-numeric: tabular-nums; }
-  .actions { display: flex; gap: 8px; margin-top: 16px; }
-  button {
-    border: 1px solid #D9D2D0;
-    background: #fff;
-    border-radius: 8px;
-    padding: 9px 13px;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  button.primary { background: #1D1A1A; color: #fff; border-color: #1D1A1A; }
-  pre {
-    margin-top: 14px;
-    padding: 12px;
-    border-radius: 8px;
-    background: #F6F1F0;
-    color: #5E5757;
-    font: 11.5px/1.75 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    white-space: pre-wrap;
-  }
-  @media (max-width: 1080px) {
-    .layout { grid-template-columns: 1fr; width: min(420px, calc(100vw - 24px)); }
-    .panel { position: static; max-height: none; }
-    .preview-frame, iframe { width: min(420px, 100%); }
-  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #FFFDFC; color: var(--ink); }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 28px 24px 36px; }
+  .top { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+  h1 { margin: 0; font-size: 22px; letter-spacing: 0; }
+  .hint { margin: 8px 0 0; font-size: 13px; color: var(--soft); }
+  .layout { display: grid; grid-template-columns: 420px 420px minmax(330px, 1fr); align-items: start; gap: 22px; }
+  .module-title { margin: 0 0 10px; font-size: 14px; font-weight: 700; color: #625A5A; }
+  .phone { width: 420px; height: 812px; overflow: hidden; border: 1px solid var(--line); border-radius: 34px; background: var(--paper); box-shadow: var(--shadow); }
+  iframe { display: block; width: 100%; height: 100%; border: 0; background: var(--paper); }
+  .panel { position: sticky; top: 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 18px; box-shadow: var(--shadow); }
+  .panel h2 { margin: 0; font-size: 18px; }
+  .panel-note { margin: 8px 0 18px; font-size: 13px; line-height: 1.7; color: var(--soft); }
+  .control { padding: 14px 0; border-top: 1px solid var(--line); }
+  .control:first-of-type { border-top: 0; }
+  .label-row { display: flex; justify-content: space-between; gap: 14px; align-items: center; margin-bottom: 8px; }
+  label { font-size: 13px; font-weight: 700; }
+  output { min-width: 64px; text-align: right; font-size: 12px; color: var(--accent); font-weight: 700; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .actions { display: flex; gap: 10px; margin-top: 16px; }
+  button { border: 0; border-radius: 999px; padding: 10px 14px; background: var(--ink); color: var(--paper); font-size: 13px; cursor: pointer; }
+  button.secondary { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+  pre { margin: 16px 0 0; padding: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; white-space: pre-wrap; font: 12px/1.7 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #4B4444; }
+  @media (max-width: 1240px) { .layout { grid-template-columns: 420px 420px; } .panel { position: static; grid-column: 1 / -1; } }
 </style>
 </head>
 <body>
-<div class="layout">
-  <main>
-    <p class="module-title">写死的时间线页</p>
-    <div class="preview-frame">
-      <iframe id="timeline-frame" src="prototype/index.html"></iframe>
-    </div>
-  </main>
-
-  <main>
-    <p class="module-title">索引页预览</p>
-    <div class="preview-frame">
-      <iframe id="index-frame" src="prototype/index.html"></iframe>
-    </div>
-  </main>
-
-  <aside class="panel">
-    <h1>索引布局调整器</h1>
-    <p class="hint">两个预览都直接加载真实 prototype。左边固定显示时间线页作参照，右边显示索引页；滑块只影响右边索引预览，不会保存进 prototype。</p>
-    <div id="controls"></div>
-    <div class="actions">
-      <button onclick="resetValues()">重置</button>
-      <button class="primary" onclick="copyValues()">复制数值</button>
-    </div>
-    <pre id="out"></pre>
-  </aside>
-</div>
-
+<main class="wrap">
+  <div class="top"><div><h1>决策日记 · 真实索引调整器</h1><p class="hint">预览由当前 prototype/index.html 源码生成；prototype 文件不改，滑块只影响这里的预览副本。</p></div></div>
+  <section class="layout">
+    <div><p class="module-title">写死的时间线页</p><div class="phone"><iframe id="timeline-frame" title="时间线页真实预览"></iframe></div></div>
+    <div><p class="module-title">索引页真实预览</p><div class="phone"><iframe id="index-frame" title="索引页真实预览"></iframe></div></div>
+    <aside class="panel">
+      <h2>索引页滑动器</h2>
+      <p class="panel-note">右侧是真实前端源码生成的索引页副本。调整确认后，再把数据写回 prototype。</p>
+      <div class="control"><div class="label-row"><label for="filtersY">全部 到 告别：上下相对位置</label><output id="filtersYOut">40.5px</output></div><input id="filtersY" type="range" min="-30" max="160" step="0.5" value="40.5"></div>
+      <div class="control"><div class="label-row"><label for="listY">数码及以下白框：上下相对位置</label><output id="listYOut">30.5px</output></div><input id="listY" type="range" min="-40" max="190" step="0.5" value="30.5"></div>
+      <div class="actions"><button id="copyBtn">复制当前数据</button><button class="secondary" id="resetBtn">恢复当前写入值</button></div>
+      <pre id="output"></pre>
+    </aside>
+  </section>
+</main>
 <script>
-const CONFIG = [
-  { title: "你认真想过 10 件东西：上下左右相对位置与大小", keys: [
-    ["indexSubX", "左右", -80, 80, 0], ["indexSubY", "上下", -30, 140, 44.5], ["indexSubSize", "字号", 10, 22, 12.5]
-  ] },
-  { title: "全部 到 告别：上下与等比例大小调整", keys: [
-    ["indexFiltersY", "上下", -30, 160, 40.5], ["indexFiltersScale", "比例", 0.7, 1.3, 1, "x"]
-  ] },
-  { title: "数码与白框：上下调整", keys: [
-    ["indexWhiteY", "上下", -40, 190, 30.5]
-  ] }
-];
-const STORAGE_KEY = "decision-layout-index-real-preview-v3";
-const defaults = {};
-CONFIG.forEach(group => group.keys.forEach(k => defaults[k[0]] = k[4]));
-let values = { ...defaults, ...(JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {}) };
+  const prototypeHtml = "<!DOCTYPE html>\n<html lang=\"zh-CN\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\">\n<meta name=\"apple-mobile-web-app-title\" content=\"决策日记\">\n<meta name=\"theme-color\" content=\"#F6F1F0\">\n<meta http-equiv=\"Cache-Control\" content=\"no-cache, no-store, must-revalidate\">\n<meta http-equiv=\"Pragma\" content=\"no-cache\">\n<meta http-equiv=\"Expires\" content=\"0\">\n<link rel=\"apple-touch-icon\" href=\"icon.png\">\n<link rel=\"manifest\" href=\"manifest.webmanifest\">\n<meta name=\"mobile-web-app-capable\" content=\"yes\">\n<meta name=\"description\" content=\"购买前想清楚，购买后长期验证。一本安静的决策日记。\">\n<title>决策日记</title>\n<style>\n  :root {\n    --paper: #F6F1F0;\n    --card: #FFFFFF;\n    --ink: #1D1A1A;\n    --ink-soft: #5E5757;\n    --gray: #8E8688;\n    --gray-light: #A79FA0;\n    --gray-faint: #BBB2B3;\n    --gray-mute: #B4ACAD;\n    --line: #EBE3E1;\n    --line-faint: #F0E9E7;\n    --accent: #5E5CE6;\n    --serif: -apple-system, \"PingFang SC\", \"Helvetica Neue\", sans-serif;\n    --sans: -apple-system, \"PingFang SC\", \"Helvetica Neue\", sans-serif;\n    --serif-real: \"Songti SC\", \"Noto Serif SC\", Georgia, serif;\n  }\n  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }\n  body { background: var(--paper); font-family: var(--sans); color: var(--ink); }\n  .app { max-width: 420px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }\n  .screen { flex: 1; padding: 24px 24px 90px; display: none; }\n  .screen.active { display: block; }\n  .page-title { font-size: 26px; font-weight: 700; letter-spacing: 0.3px; }\n  .page-sub { font-size: 12.5px; color: var(--gray); margin-top: 10px; }\n  .header { padding: 18px 0 14px; }\n  .review-line { background: var(--card); border-radius: 18px; padding: 14px 16px; font-size: 13px; color: var(--ink-soft); line-height: 1.65; cursor: pointer; margin-top: 4px; }\n  .month { font-size: 15px; font-weight: 600; color: var(--ink); margin: 20px 0 10px; }\n  .card { background: var(--card); border-radius: 18px; padding: 15px 16px 13px; margin-bottom: 10px; cursor: pointer; transition: opacity .2s ease; }\n  .card:active { opacity: 0.85; }\n  .card .name { font-size: 15.5px; font-weight: 600; }\n  .card .state { font-size: 11.5px; color: var(--gray-faint); margin-top: 10px; }\n  .card .quote { font-size: 13px; color: var(--gray); line-height: 1.6; margin-top: 9px; }\n  .filters { display: flex; gap: 8px; padding: 6px 0 4px; overflow-x: auto; flex-wrap: wrap; }\n  .filter { font-size: 12.5px; color: var(--gray-faint); font-weight: 600; padding: 6px 14px; cursor: pointer; white-space: nowrap; background: var(--card); border-radius: 20px; transition: all .15s; }\n  .filter.on { color: var(--paper); background: var(--ink); }\n  .cat { font-size: 15px; font-weight: 600; color: var(--ink); margin: 20px 0 10px; }\n  .row { background: var(--card); border-radius: 18px; padding: 14px 16px 12px; margin-bottom: 10px; cursor: pointer; transition: opacity .2s ease; }\n  .row:active { opacity: 0.85; }\n  .row-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }\n  .row .name { font-size: 14.5px; font-weight: 600; }\n  .row .time { font-size: 12px; color: var(--gray); flex-shrink: 0; }\n  .row .sub { font-size: 11.5px; color: var(--gray-faint); margin-top: 6px; }\n  .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--paper); }\n  .tabbar-inner { max-width: 420px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 12px 52px max(18px, env(safe-area-inset-bottom)); position: relative; }\n  .tab { font-size: 12.5px; color: var(--gray-faint); cursor: pointer; font-weight: 600; }\n  .tab.on { color: var(--ink); }\n  .fab { position: absolute; left: 50%; transform: translateX(-50%); top: -18px; width: 54px; height: 54px; border-radius: 50%; background: var(--card); color: var(--accent); font-size: 28px; font-weight: 300; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 5px rgba(0,0,0,0.10); cursor: pointer; }\n  .menu-btn { font-size: 17px; color: var(--gray); cursor: pointer; padding: 2px 8px 2px 0; }\n  .home-top { display: flex; justify-content: space-between; align-items: center; padding: 18px 0 0; }\n  .home-icons { display: flex; gap: 10px; align-items: center; }\n  .icon-btn { width: 44px; height: 44px; border-radius: 50%; background: #E6E4E6; display: flex; align-items: center; justify-content: center; color: #1C1B1D; cursor: pointer; overflow: hidden; flex-shrink: 0; }\n  .icon-btn:active { opacity: 0.8; }\n  .icon-btn img { width: 100%; height: 100%; object-fit: cover; }\n  .icon-btn .av-ph { font-size: 15px; font-weight: 500; color: #1C1B1D; }\n  .search-bar { display: flex; align-items: center; gap: 12px; padding-top: 8px; }\n  .search-field { flex: 1; display: flex; align-items: center; gap: 8px; background: var(--card); border-radius: 12px; padding: 10px 12px; }\n  .search-field svg { flex-shrink: 0; color: var(--gray-light); }\n  .search-field input { flex: 1; background: transparent; border: none; outline: none; font-size: 16px; color: var(--ink); }\n  .search-field input::placeholder { color: var(--gray-faint); }\n  .search-cancel { font-size: 15px; color: var(--accent); cursor: pointer; flex-shrink: 0; }\n  .search-cat-title { font-size: 20px; font-weight: 700; margin: 28px 0 4px; }\n  .search-catrow { display: flex; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 15px; color: var(--ink); cursor: pointer; }\n  .search-catrow svg { color: var(--ink-soft); }\n  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.25); display: none; z-index: 20; }\n  .scrim.show { display: block; }\n  .drawer { position: fixed; top: 0; bottom: 0; left: 0; width: 82%; max-width: 320px; background: var(--paper); z-index: 21; transform: translateX(-105%); transition: transform .28s ease; padding: calc(30px + env(safe-area-inset-top)) 24px 24px; overflow-y: auto; }\n  .drawer.show { transform: translateX(0); }\n  .topbar { display: flex; justify-content: space-between; align-items: center; padding-top: 4px; }\n  .topbar .side { font-size: 13px; color: var(--ink-soft); font-weight: 300; cursor: pointer; }\n  .plus { font-size: 20px; }\n  .back { font-size: 13px; color: var(--ink-soft); cursor: pointer; padding: 4px 0; }\n  .bio-name { font-size: 22px; font-weight: 700; margin-top: 22px; }\n  .bio-state { font-size: 12.5px; color: var(--gray-light); margin-top: 8px; letter-spacing: 0.3px; }\n  .entry { background: var(--card); border-radius: 18px; padding: 15px 16px 14px; margin-top: 12px; }\n  .entry:first-of-type { margin-top: 26px; }\n  .entry .e-head { display: flex; align-items: baseline; }\n  .entry .date { font-size: 11.5px; color: var(--gray-mute); letter-spacing: 2px; }\n  .entry .kind { font-size: 11.5px; color: var(--gray-light); margin-left: 10px; }\n  .entry .e-del { margin-left: auto; font-size: 13px; color: var(--gray-light); cursor: pointer; line-height: 1; padding: 3px 8px; border: 1px solid var(--line); border-radius: 7px; }\n  .entry .text { font-size: 15px; line-height: 1.8; color: var(--ink); margin-top: 10px; }\n  .meta { margin-top: 40px; background: var(--card); border-radius: 18px; padding: 4px 16px 8px; }\n  .meta summary { font-size: 12px; color: var(--gray-mute); padding: 10px 0; cursor: pointer; list-style: none; }\n  .meta summary::-webkit-details-marker { display: none; }\n  .meta .mrow { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; color: var(--gray); }\n  .meta .mrow span:last-child { color: var(--ink-soft); }\n  .create-q { font-size: 22px; font-weight: 700; margin-top: 44px; line-height: 1.5; }\n  .create-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--line); font-size: 15px; padding: 14px 0 10px; outline: none; color: var(--ink); }\n  .create-input::placeholder, .create-area::placeholder { color: var(--gray-faint); }\n  .create-area { width: 100%; min-height: 140px; background: transparent; border: none; padding: 16px 0 0; font-size: 16px; line-height: 1.8; outline: none; resize: none; color: var(--ink); margin-top: 4px; }\n  .create-actions { margin-top: 30px; display: flex; gap: 12px; align-items: center; }\n  .btn { font-family: var(--sans); font-size: 13.5px; padding: 10px 22px; border-radius: 22px; cursor: pointer; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); }\n  .btn.ghost { background: transparent; border-color: var(--line); color: var(--gray); }\n  .overlay { position: fixed; inset: 0; background: var(--paper); display: none; align-items: center; justify-content: center; text-align: center; padding: 44px; z-index: 10; }\n  .overlay.show { display: flex; }\n  .ritual-card { background: var(--card); border-radius: 20px; padding: 42px 30px 28px; width: 100%; max-width: 300px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }\n  .r-label { font-size: 11px; color: var(--gray-mute); letter-spacing: 5px; }\n  .r-name { font-size: 21px; font-weight: 700; color: var(--ink); margin-top: 20px; }\n  .r-text { font-family: var(--serif-real); font-size: 14.5px; line-height: 2.1; color: var(--ink-soft); margin-top: 16px; }\n  .r-date { font-size: 11px; color: var(--gray-faint); margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line-faint); letter-spacing: 2px; }\n  .overlay .small { font-size: 12px; color: var(--gray-faint); margin-top: 28px; }\n  .photo-preview { width: 88px; height: 88px; object-fit: cover; border-radius: 12px; margin-top: 12px; border: 1px solid var(--line); display: none; }\n  .detail-actions { margin-top: 36px; display: flex; gap: 10px; flex-wrap: wrap; }\n  .compose { margin-top: 24px; display: none; }\n  .compose .create-area { background: var(--card); border-radius: 18px; padding: 15px 16px; margin-top: 0; min-height: 140px; }\n  .compose .photo-line { padding-left: 16px; }\n  .compose .photo-preview { margin-left: 16px; }\n  .compose .create-actions { padding-left: 16px; }\n  .compose-hint { font-size: 12px; color: var(--gray-light); margin-top: 12px; display: none; padding-left: 16px; }\n  .del-link { font-size: 12px; color: var(--gray-light); padding: 14px 0 4px; cursor: pointer; }\n  .del-warn { font-size: 13px; color: var(--ink-soft); margin-top: 12px; }\n  .del-hint { font-size: 12px; color: var(--gray-light); margin-top: 8px; line-height: 1.8; }\n  .del-done { color: var(--ink-soft); margin-left: 10px; cursor: pointer; border-bottom: 1px solid var(--line); }\n  .photo-line { margin-top: 16px; font-size: 12.5px; color: var(--gray-light); cursor: pointer; }\n  .photo-line .picked { color: var(--ink-soft); }\n  .entry img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; margin-top: 12px; display: block; }\n  .cal-wrap { margin-top: 20px; background: var(--card); border-radius: 18px; padding: 16px 14px 14px; }\n  .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }\n  .cal-title { font-family: var(--serif); font-size: 15px; color: var(--ink); letter-spacing: 1px; }\n  .cal-arrow { font-size: 18px; color: var(--gray); cursor: pointer; padding: 4px 10px; user-select: none; }\n  .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; color: var(--gray-mute); letter-spacing: 1px; margin-bottom: 6px; }\n  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 2px 0; }\n  .cal-cell { font-size: 13.5px; color: var(--ink-soft); padding: 8px 0; cursor: pointer; border-radius: 50%; transition: background .15s; line-height: 1; }\n  .cal-cell:active { background: var(--line); }\n  .cal-cell.empty { cursor: default; }\n  .cal-cell.today { color: var(--ink); font-weight: 600; }\n  .cal-cell.selected { background: var(--ink); color: var(--paper); font-weight: 500; }\n  .cal-cell.other { color: var(--gray-faint); }\n  .cal-manual { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line-faint); }\n  .cal-input { width: 48px; background: transparent; border: none; border-bottom: 1px solid var(--line); font-family: var(--sans); font-size: 13px; color: var(--ink); text-align: center; padding: 4px 0; outline: none; }\n  .cal-input-sm { width: 36px; }\n  .cal-sep { font-size: 12px; color: var(--gray-mute); }\n  .cal-go { font-size: 12px; color: var(--ink-soft); cursor: pointer; margin-left: 6px; border-bottom: 1px solid var(--line); padding-bottom: 1px; }\n  .card-row { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }\n  .card-thumb { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }\n  .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; display: none; cursor: pointer; }\n  .avatar-ph { width: 72px; height: 72px; border-radius: 50%; border: 1px dashed var(--gray-faint); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--gray-faint); cursor: pointer; text-align: center; line-height: 1.5; }\n  .me-name { background: transparent; border: none; outline: none; font-size: 19px; font-weight: 600; color: var(--ink); width: 100%; padding: 0; position: relative; top: -2px; }\n  .me-name::placeholder { color: var(--gray-faint); }\n  .settings-group { margin-top: 28px; background: var(--card); border-radius: 18px; overflow: hidden; }\n  .settings-row { padding: 15px 16px; border-bottom: 1px solid var(--line-faint); font-size: 14.5px; color: var(--ink); display: flex; justify-content: space-between; }\n  .settings-row:last-child { border-bottom: none; }\n  .settings-row span:last-child { color: var(--gray-faint); font-size: 13px; }\n  .empty-note { font-family: var(--serif); font-size: 13.5px; color: var(--gray-light); line-height: 1.8; margin-top: 40px; text-align: center; }\n\n  /* ── 时间线页固定数值 / 索引页初始对齐数值：2026-07-23 ── */\n  #screen-timeline .page-title {\n    position: relative;\n    left: 0;\n    top: 37.5px;\n    font-size: 29px;\n  }\n  #screen-timeline .home-icons {\n    position: relative;\n    left: 0;\n    top: 38px;\n    gap: 10px;\n  }\n  #screen-timeline .icon-btn {\n    width: 30px;\n    height: 30px;\n  }\n  #screen-timeline .icon-btn svg {\n    width: 14px;\n    height: 14px;\n  }\n  #screen-timeline .icon-btn .av-ph {\n    font-size: 10px;\n  }\n  #screen-timeline .header {\n    position: relative;\n    left: 0;\n    top: 44.5px;\n  }\n  #screen-timeline .page-sub {\n    font-size: 12.5px;\n  }\n  #screen-timeline .review-line {\n    position: relative;\n    top: 44px;\n    width: 100%;\n    min-height: 68.5px;\n  }\n  #screen-timeline .review-line .review-text-scale {\n    display: inline-block;\n    transform: translateY(0px) scale(1.05);\n    transform-origin: left center;\n  }\n  #screen-timeline #timeline-list {\n    position: relative;\n    top: 35px;\n  }\n\n  #screen-index .page-title {\n    position: relative;\n    left: 0;\n    top: 37.5px;\n    font-size: 29px;\n  }\n  #screen-index .home-icons {\n    position: relative;\n    left: 0;\n    top: 38px;\n    gap: 10px;\n  }\n  #screen-index .icon-btn {\n    width: 30px;\n    height: 30px;\n  }\n  #screen-index .icon-btn svg {\n    width: 14px;\n    height: 14px;\n  }\n  #screen-index .icon-btn .av-ph {\n    font-size: 10px;\n  }\n  #screen-index .header {\n    position: relative;\n    left: 0;\n    top: 44.5px;\n  }\n  #screen-index .page-sub {\n    font-size: 12.5px;\n  }\n  #screen-index .filters {\n    position: relative;\n    top: 40.5px;\n    flex-wrap: nowrap;\n    overflow-x: visible;\n    transform: scale(1);\n    transform-origin: left top;\n  }\n  #screen-index .filter {\n    font-size: 11.5px;\n    min-height: 28px;\n    display: inline-flex;\n    align-items: center;\n  }\n  #screen-index #index-list {\n    position: relative;\n    top: 30.5px;\n  }\n</style>\n</head>\n<body>\n<div class=\"app\">\n\n  <div class=\"screen active\" id=\"screen-timeline\">\n    <div class=\"home-top\">\n      <p class=\"page-title\">决策日记</p>\n      <div class=\"home-icons\">\n        <div class=\"icon-btn\" onclick=\"openSearch()\">\n          <svg width=\"21\" height=\"21\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\"><circle cx=\"10.5\" cy=\"10.5\" r=\"7\"/><line x1=\"15.8\" y1=\"15.8\" x2=\"21\" y2=\"21\"/></svg>\n        </div>\n        <div class=\"icon-btn\" onclick=\"openDrawer()\">\n          <img id=\"home-avatar\" alt=\"\" style=\"display:none\">\n          <span class=\"av-ph\" id=\"home-avatar-ph\">我</span>\n        </div>\n      </div>\n    </div>\n    <div class=\"header\" style=\"padding-top: 8px;\">\n      <p class=\"page-sub\" id=\"home-stats\" style=\"margin-top: 0;\"></p>\n    </div>\n    <p class=\"review-line\" onclick=\"openDetail('headphone')\"><span class=\"review-text-scale\">降噪耳机已经陪你三个月了，感觉如何？</span></p>\n    <div id=\"timeline-list\"></div>\n  </div>\n\n  <div class=\"screen\" id=\"screen-index\">\n    <div class=\"home-top\">\n      <p class=\"page-title\">索引</p>\n      <div class=\"home-icons\">\n        <div class=\"icon-btn\" onclick=\"openSearch()\">\n          <svg width=\"21\" height=\"21\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\"><circle cx=\"10.5\" cy=\"10.5\" r=\"7\"/><line x1=\"15.8\" y1=\"15.8\" x2=\"21\" y2=\"21\"/></svg>\n        </div>\n        <div class=\"icon-btn\" onclick=\"openDrawer()\">\n          <img id=\"index-avatar\" alt=\"\" style=\"display:none\">\n          <span class=\"av-ph\" id=\"index-avatar-ph\">我</span>\n        </div>\n      </div>\n    </div>\n    <div class=\"header\" style=\"padding-top: 8px;\">\n      <p class=\"page-sub\" id=\"index-sub\" style=\"margin-top: 0;\"></p>\n    </div>\n    <div class=\"filters\">\n      <span class=\"filter on\" data-f=\"all\">全部</span>\n      <span class=\"filter\" data-f=\"companion\">陪伴中</span>\n      <span class=\"filter\" data-f=\"deciding\">犹豫中</span>\n      <span class=\"filter\" data-f=\"passed\">没有买</span>\n      <span class=\"filter\" data-f=\"idle\">闲置</span>\n      <span class=\"filter\" data-f=\"ended\">告别</span>\n    </div>\n    <div id=\"index-list\"></div>\n  </div>\n\n  <div class=\"screen\" id=\"screen-search\">\n    <div class=\"search-bar\">\n      <div class=\"search-field\">\n        <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><line x1=\"16.5\" y1=\"16.5\" x2=\"21\" y2=\"21\"/></svg>\n        <input id=\"search-input\" placeholder=\"搜索\" oninput=\"runSearch()\">\n      </div>\n      <span class=\"search-cancel\" onclick=\"closeSearch()\">取消</span>\n    </div>\n    <div id=\"search-default\">\n      <p class=\"search-cat-title\">类别</p>\n      <div class=\"search-catrow\">\n        <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><line x1=\"4\" y1=\"7\" x2=\"20\" y2=\"7\"/><line x1=\"4\" y1=\"12\" x2=\"16\" y2=\"12\"/><line x1=\"4\" y1=\"17\" x2=\"12\" y2=\"17\"/></svg>\n        <span>仅文本</span>\n      </div>\n    </div>\n    <div id=\"search-results\"></div>\n  </div>\n\n  <div class=\"screen\" id=\"screen-detail\">\n    <p class=\"back\" onclick=\"closeDetail()\">‹ 返回</p>\n    <p class=\"bio-name\" id=\"d-name\"></p>\n    <p class=\"bio-state\" id=\"d-state\"></p>\n    <div id=\"d-entries\"></div>\n    <div class=\"detail-actions\" id=\"d-actions\"></div>\n    <div class=\"compose\" id=\"d-compose\">\n      <textarea class=\"create-area\" id=\"d-compose-text\"></textarea>\n      <p class=\"photo-line\" onclick=\"document.getElementById('d-photo').click()\"><span id=\"d-photo-label\">添加一张图（可不填）</span> <span id=\"d-photo-name\"></span></p>\n      <input type=\"file\" accept=\"image/*\" id=\"d-photo\" style=\"display:none\" onchange=\"pickPhoto('d')\">\n      <img class=\"photo-preview\" id=\"d-photo-preview\" alt=\"\">\n      <p class=\"photo-line\" id=\"d-date-line\" onclick=\"toggleComposeCal()\">记录时间 · 今天</p>\n      <div id=\"d-cal-slot\"></div>\n      <p class=\"compose-hint\" id=\"d-compose-hint\"></p>\n      <div class=\"create-actions\">\n        <button class=\"btn\" onclick=\"saveCompose()\">记下</button>\n        <button class=\"btn ghost\" onclick=\"hideCompose()\">返回</button>\n      </div>\n    </div>\n    <details class=\"meta\" id=\"d-meta\">\n      <summary>记录信息</summary>\n      <div id=\"d-meta-rows\"></div>\n      <p class=\"del-link\" id=\"d-del-link\" onclick=\"toggleDelMode()\">删除记录</p>\n      <p class=\"del-hint\" id=\"d-del-hint\" style=\"display:none\">点条目右侧的 × 删除单条，删除不可恢复。全部删完后，再点一次\"删除记录\"即可删除整个物品。<span class=\"del-done\" onclick=\"exitDelMode()\">完成</span></p>\n    </details>\n  </div>\n\n  <div class=\"screen\" id=\"screen-create\">\n    <p class=\"back\" onclick=\"cancelCreate()\">‹ 先放着</p>\n    <div id=\"cstep1\">\n      <p class=\"create-q\">你在想什么？</p>\n      <input class=\"create-input\" id=\"c-name\" placeholder=\"它的名字，比如：一台咖啡机\">\n      <div class=\"create-actions\"><button class=\"btn\" onclick=\"createNext()\">下一步</button></div>\n    </div>\n    <div id=\"cstep2\" style=\"display:none\">\n      <p class=\"create-q\">为什么想要它？</p>\n      <textarea class=\"create-area\" id=\"c-why\" placeholder=\"想到什么写什么。给几个月后的自己留一句话就够。\"></textarea>\n      <p class=\"photo-line\" onclick=\"document.getElementById('c-photo').click()\">添加一张图（可不填） <span id=\"c-photo-name\"></span></p>\n      <input type=\"file\" accept=\"image/*\" id=\"c-photo\" style=\"display:none\" onchange=\"pickPhoto('c')\">\n      <img class=\"photo-preview\" id=\"c-photo-preview\" alt=\"\">\n      <div id=\"c-cal-slot\"></div>\n      <div class=\"cal-wrap\" id=\"c-cal-wrap\">\n        <div class=\"cal-manual\">\n          <input class=\"cal-input\" id=\"cal-y\" type=\"number\" placeholder=\"年\" min=\"2020\" max=\"2030\">\n          <span class=\"cal-sep\">年</span>\n          <input class=\"cal-input\" id=\"cal-m\" type=\"number\" placeholder=\"月\" min=\"1\" max=\"12\">\n          <span class=\"cal-sep\">月</span>\n          <input class=\"cal-input cal-input-sm\" id=\"cal-d\" type=\"number\" placeholder=\"日\" min=\"1\" max=\"31\">\n          <span class=\"cal-sep\">日</span>\n          <span class=\"cal-go\" onclick=\"calManualGo()\">跳转</span>\n        </div>\n        <div class=\"cal-head\">\n          <span class=\"cal-arrow\" onclick=\"calNav(-1)\">‹</span>\n          <span class=\"cal-title\" id=\"cal-title\"></span>\n          <span class=\"cal-arrow\" onclick=\"calNav(1)\">›</span>\n        </div>\n        <div class=\"cal-weekdays\">\n          <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>\n        </div>\n        <div class=\"cal-grid\" id=\"cal-grid\"></div>\n      </div>\n      <input class=\"create-input\" id=\"c-price\" placeholder=\"价格（可不填）\">\n      <input class=\"create-input\" id=\"c-cat\" placeholder=\"分类，比如：数码（可不填）\">\n      <div class=\"create-actions\"><button class=\"btn\" onclick=\"saveCreate()\">记下</button></div>\n    </div>\n  </div>\n\n</div>\n\n<div class=\"scrim\" id=\"scrim\" onclick=\"closeDrawer()\"></div>\n<div class=\"drawer\" id=\"drawer\">\n  <div style=\"display: flex; align-items: center; gap: 18px; background: var(--card); border-radius: 18px; padding: 18px 16px;\" id=\"me-head\">\n    <div id=\"me-avatar-box\">\n      <img class=\"avatar\" id=\"me-avatar\" alt=\"\" onclick=\"document.getElementById('me-photo').click()\">\n      <div class=\"avatar-ph\" id=\"me-avatar-ph\" onclick=\"document.getElementById('me-photo').click()\">添加<br>照片</div>\n      <input type=\"file\" accept=\"image/*\" id=\"me-photo\" style=\"display:none\" onchange=\"setAvatar()\">\n    </div>\n    <div style=\"flex: 1;\">\n      <input class=\"me-name\" id=\"me-name\" placeholder=\"写下你的名字\" onchange=\"saveName()\">\n      <p class=\"page-sub\" id=\"me-sub\" style=\"margin-top: 8px;\">这本日记的主人</p>\n    </div>\n  </div>\n  <div class=\"settings-group\">\n    <div class=\"settings-row\"><span>回访提醒</span><span>每周至多一条</span></div>\n    <div class=\"settings-row\"><span>iCloud 同步</span><span>已开启</span></div>\n    <div class=\"settings-row\"><span>导出全部记录</span><span></span></div>\n    <div class=\"settings-row\"><span>关于</span><span></span></div>\n  </div>\n  <p class=\"empty-note\">这本日记属于你自己。<br>没有会员，没有推送轰炸，没有统计报表。</p>\n</div>\n\n<div class=\"overlay\" id=\"ritual\" onclick=\"hideRitual()\">\n  <div style=\"text-align: center;\">\n    <div class=\"ritual-card\">\n      <p class=\"r-label\" id=\"ritual-label\">决策日记</p>\n      <p class=\"r-name\" id=\"ritual-name\"></p>\n      <p class=\"r-text\" id=\"ritual-text\"></p>\n      <p class=\"r-date\" id=\"ritual-date\"></p>\n    </div>\n    <p class=\"small\">轻触任意处继续</p>\n  </div>\n</div>\n\n<div class=\"tabbar\" id=\"tabbar\">\n  <div class=\"tabbar-inner\">\n    <span class=\"tab on\" data-t=\"timeline\">时间线</span>\n    <div class=\"fab\" onclick=\"openCreate()\">＋</div>\n    <span class=\"tab\" data-t=\"index\">索引</span>\n  </div>\n</div>\n\n<script>\nconst items = {\n  camera: {\n    name: \"Sony A7C II 相机\", cat: \"数码\", status: \"deciding\",\n    state: \"犹豫中 · 第 23 天\", time: \"第 23 天\", month: \"七月\",\n    quote: \"「想要一台能随身带出门的相机，但不确定会不会吃灰。」\",\n    sub: \"记于 · 六月二十四日\",\n    entries: [\n      { date: \"六月二十四日\", kind: \"起点\", text: \"想要一台能随身带出门的相机。手机拍不出那种氛围感。但上一台微单最后是在防潮箱里度过的，我不确定这次会不会不一样。\" },\n      { date: \"七月八日\", kind: \"追记\", text: \"这两周周末都翻了摄影的东西，好像不只是三分钟热度。但也可能只是因为我在考虑买它，才格外关注。再等等。\" }\n    ],\n    meta: [[\"关注价格\", \"¥15,999\"], [\"记录日期\", \"2026 年 6 月 24 日\"]]\n  },\n  kindle: {\n    name: \"Kindle 阅读器\", cat: \"数码\", status: \"deciding\",\n    state: \"犹豫中 · 第 6 天\", time: \"第 6 天\", month: \"七月\",\n    quote: \"「手机上读不进书，也许换个设备能好一点？」\",\n    sub: \"记于 · 七月十一日\",\n    entries: [\n      { date: \"七月十一日\", kind: \"起点\", text: \"手机上读不进书，总是滑向别的 App。也许一个只能看书的设备能好一点？但也可能问题不在设备，在我。\" }\n    ],\n    meta: [[\"关注价格\", \"¥1,299\"], [\"记录日期\", \"2026 年 7 月 11 日\"]]\n  },\n  headphone: {\n    name: \"降噪耳机\", cat: \"数码\", status: \"companion\",\n    state: \"陪伴你 · 三个月\", time: \"三个月\", month: \"四月\",\n    quote: \"「通勤的一小时里，想有一点自己的空间。」\",\n    sub: \"上次回访 · 三个月前\",\n    entries: [\n      { date: \"四月十二日\", kind: \"起点\", text: \"通勤的一小时里，想有一点自己的空间。地铁的噪音让我每天到公司就已经很累了。\" },\n      { date: \"四月二十日\", kind: \"决定购买\", text: \"试戴了朋友的，降噪效果比想象中好。犹豫的八天里每天通勤都在想它，应该不是冲动。\" }\n    ],\n    meta: [[\"购入价格\", \"¥1,899\"], [\"购入日期\", \"2026 年 4 月 20 日\"]]\n  },\n  macbook: {\n    name: \"MacBook Air\", cat: \"数码\", status: \"companion\",\n    state: \"陪伴你 · 两年一个月\", time: \"两年一个月\", month: \"更早\",\n    quote: \"「想要一台随时能开始工作的轻薄电脑。」\",\n    sub: \"上次回访 · 上个月\",\n    entries: [\n      { date: \"2024 年 6 月\", kind: \"起点\", text: \"想要一台随时能开始工作的轻薄电脑，旧的那台开机要两分钟。\" },\n      { date: \"2025 年 6 月\", kind: \"一周年回访\", text: \"一年了，几乎每天都用。是这几年买得最值的东西。\" },\n      { date: \"2026 年 6 月\", kind: \"两周年回访\", text: \"两年了依然流畅。当时纠结要不要上 Pro，现在看 Air 完全够。\" }\n    ],\n    meta: [[\"购入价格\", \"¥8,999\"], [\"购入日期\", \"2024 年 6 月 15 日\"]]\n  },\n  toothbrush: {\n    name: \"电动牙刷\", cat: \"数码\", status: \"companion\",\n    state: \"陪伴你 · 一年半\", time: \"一年半\", month: \"更早\",\n    quote: \"「牙医说我刷牙太用力了。」\",\n    sub: \"上次回访 · 十个月前\",\n    entries: [\n      { date: \"2025 年 1 月\", kind: \"起点\", text: \"牙医说我刷牙太用力了，建议换电动的。\" }\n    ],\n    meta: [[\"购入价格\", \"¥399\"], [\"购入日期\", \"2025 年 1 月 20 日\"]]\n  },\n  lamp: {\n    name: \"落地灯\", cat: \"家居\", status: \"companion\",\n    state: \"陪伴你 · 一年两个月\", time: \"一年两个月\", month: \"更早\",\n    quote: \"「晚上客厅的顶灯太亮太冷了。」\",\n    sub: \"上次回访 · 两个月前\",\n    entries: [\n      { date: \"2025 年 5 月\", kind: \"起点\", text: \"晚上客厅的顶灯太亮太冷了，想要一盏能让房间安静下来的灯。\" },\n      { date: \"2026 年 5 月\", kind: \"一周年回访\", text: \"每天晚上都开。它改变了整个客厅的气质，这钱花得清楚。\" }\n    ],\n    meta: [[\"购入价格\", \"¥1,280\"], [\"购入日期\", \"2025 年 5 月 3 日\"]]\n  },\n  blanket: {\n    name: \"羊毛毯\", cat: \"家居\", status: \"companion\",\n    state: \"陪伴你 · 八个月\", time: \"八个月\", month: \"更早\",\n    quote: \"「冬天在沙发上看书总是冷。」\",\n    sub: \"上次回访 · 半年前\",\n    entries: [\n      { date: \"2025 年 11 月\", kind: \"起点\", text: \"冬天在沙发上看书总是冷，开空调又太干。\" }\n    ],\n    meta: [[\"购入价格\", \"¥459\"], [\"购入日期\", \"2025 年 11 月 8 日\"]]\n  },\n  chair: {\n    name: \"人体工学椅\", cat: \"家居\", status: \"passed\",\n    state: \"想清楚了，没有买\", time: \"六月\", month: \"六月\",\n    quote: \"「我需要的其实是常站起来活动，不是一把更贵的椅子。」\",\n    sub: \"想清楚于 · 六月\",\n    entries: [\n      { date: \"五月十日\", kind: \"起点\", text: \"腰又开始疼了，想换一把好椅子。同事那把四千多的看起来很舒服。\" },\n      { date: \"六月二日\", kind: \"追记\", text: \"查了很多测评，价格从一千到八千都有。但今天久坐提醒响的时候我突然想到：我上一次站起来活动是三小时前。\" },\n      { date: \"六月二十六日\", kind: \"决定不买\", text: \"想清楚了。我需要的其实是常站起来活动，不是一把更贵的椅子。先把站立提醒用起来，半年后如果腰还疼，再回来考虑它。\" }\n    ],\n    meta: [[\"关注价格\", \"¥4,200\"], [\"记录日期\", \"2026 年 5 月 10 日\"]]\n  },\n  shoes: {\n    name: \"跑步鞋\", cat: \"运动\", status: \"companion\",\n    state: \"陪伴你 · 一个月\", time: \"一个月\", month: \"六月\",\n    quote: \"「不想再因为膝盖疼中断晨跑了。」\",\n    sub: \"刚开始陪伴你\",\n    entries: [\n      { date: \"六月五日\", kind: \"起点\", text: \"不想再因为膝盖疼中断晨跑了。旧鞋已经跑了八百多公里。\" },\n      { date: \"六月十四日\", kind: \"决定购买\", text: \"去店里试了三双，选了缓震最好的。这次不是想要新东西，是真的需要。\" }\n    ],\n    meta: [[\"购入价格\", \"¥899\"], [\"购入日期\", \"2026 年 6 月 14 日\"]]\n  },\n  yoga: {\n    name: \"瑜伽垫\", cat: \"运动\", status: \"shelved\",\n    state: \"搁置了\", time: \"搁置了\", month: \"更早\",\n    quote: \"「想在家跟着视频练一练。」\",\n    sub: \"很久没有想起它了\",\n    entries: [\n      { date: \"2025 年 9 月\", kind: \"起点\", text: \"想在家跟着视频练一练，久坐的身体需要舒展。\" }\n    ],\n    meta: [[\"关注价格\", \"¥199\"], [\"记录日期\", \"2025 年 9 月 2 日\"]]\n  }\n};\n\nconst monthOrder = [\"七月\", \"六月\", \"更早\"];\nconst catOrder = [\"数码\", \"家居\", \"运动\"];\nconst statusNames = { companion: \"陪伴中\", deciding: \"犹豫中\", passed: \"没有买\", shelved: \"搁置\" };\n\nfunction renderTimeline() {\n  const el = document.getElementById(\"timeline-list\");\n  let html = \"\";\n  monthOrder.forEach(m => {\n    const group = Object.entries(items).filter(([k, v]) => v.month === m && v.status !== \"shelved\");\n    if (!group.length) return;\n    html += `<p class=\"month\">${m}</p>`;\n    group.forEach(([k, v]) => {\n      const imgs = v.entries.filter(e => e.img);\n      const thumb = imgs.length ? `<img class=\"card-thumb\" src=\"${imgs[imgs.length - 1].img}\">` : \"\";\n      html += `<div class=\"card\" onclick=\"openDetail('${k}')\">\n        <div class=\"card-row\"><p class=\"name\">${v.name}</p>${thumb}</div>\n        ${v.quote ? `<p class=\"quote\">${v.quote.replace(/^「|」$/g, \"\")}</p>` : \"\"}\n        <p class=\"state\">${v.state}</p>\n      </div>`;\n    });\n  });\n  el.innerHTML = html;\n  renderStats();\n}\n\nlet currentFilter = \"all\";\nfunction renderIndex() {\n  const el = document.getElementById(\"index-list\");\n  const sub = document.getElementById(\"index-sub\");\n  const keys = Object.keys(items).filter(k => currentFilter === \"all\" || items[k].status === currentFilter);\n  if (currentFilter === \"all\") sub.textContent = `你认真想过 ${keys.length} 件东西`;\n  else if (currentFilter === \"companion\") sub.textContent = `${keys.length} 件东西正陪伴着你`;\n  else if (currentFilter === \"deciding\") sub.textContent = `你正在考虑 ${keys.length} 件东西`;\n  else if (currentFilter === \"idle\") sub.textContent = `${keys.length} 件东西正在闲置`;\n  else if (currentFilter === \"ended\") sub.textContent = `你与 ${keys.length} 件东西告别了`;\n  else sub.textContent = `你想清楚后放下了 ${keys.length} 件东西`;\n  let html = \"\";\n  catOrder.forEach(c => {\n    const group = keys.filter(k => items[k].cat === c);\n    if (!group.length) return;\n    html += `<p class=\"cat\">${c} · ${group.length}</p>`;\n    group.forEach(k => {\n      const v = items[k];\n      const right = currentFilter === \"all\" ? v.state : v.time;\n      html += `<div class=\"row\" onclick=\"openDetail('${k}')\">\n        <div class=\"row-top\"><span class=\"name\">${v.name}</span><span class=\"time\">${right}</span></div>\n        <p class=\"sub\">${v.sub}</p>\n      </div>`;\n    });\n  });\n  el.innerHTML = html || `<p class=\"empty-note\">这一页还是空白。</p>`;\n}\n\nlet lastScreen = \"timeline\";\nlet currentKey = null;\nfunction openDetail(key) {\n  currentKey = key;\n  const v = items[key];\n  document.getElementById(\"d-name\").textContent = v.name;\n  document.getElementById(\"d-state\").textContent = v.state;\n  renderEntries(v);\n  document.getElementById(\"d-meta-rows\").innerHTML = v.meta.map(m =>\n    `<div class=\"mrow\"><span>${m[0]}</span><span>${m[1]}</span></div>`\n  ).join(\"\");\n  document.getElementById(\"d-meta\").removeAttribute(\"open\");\n  renderActions(v);\n  hideCompose();\n  delMode = false;\n  document.getElementById(\"d-del-hint\").style.display = \"none\";\n  lastScreen = document.querySelector(\".screen.active\").id.replace(\"screen-\", \"\");\n  if (lastScreen === \"detail\" || lastScreen === \"create\") lastScreen = \"timeline\";\n  showScreen(\"detail\");\n  document.getElementById(\"tabbar\").style.display = \"none\";\n  window.scrollTo(0, 0);\n}\nfunction closeDetail() {\n  showScreen(lastScreen);\n  document.getElementById(\"tabbar\").style.display = \"\";\n}\nfunction showScreen(name) {\n  document.querySelectorAll(\".screen\").forEach(s => s.classList.remove(\"active\"));\n  document.getElementById(\"screen-\" + name).classList.add(\"active\");\n}\n\ndocument.querySelectorAll(\".tab\").forEach(t => t.addEventListener(\"click\", () => {\n  document.querySelectorAll(\".tab\").forEach(x => x.classList.remove(\"on\"));\n  t.classList.add(\"on\");\n  showScreen(t.dataset.t);\n  window.scrollTo(0, 0);\n}));\n\ndocument.querySelectorAll(\".filter\").forEach(f => f.addEventListener(\"click\", () => {\n  document.querySelectorAll(\".filter\").forEach(x => x.classList.remove(\"on\"));\n  f.classList.add(\"on\");\n  currentFilter = f.dataset.f;\n  renderIndex();\n}));\n\nconst now = new Date();\nconst cn = [\"一\",\"二\",\"三\",\"四\",\"五\",\"六\",\"七\",\"八\",\"九\",\"十\",\"十一\",\"十二\"];\nfunction cnDay(d) {\n  if (d <= 10) return [\"一\",\"二\",\"三\",\"四\",\"五\",\"六\",\"七\",\"八\",\"九\",\"十\"][d-1];\n  if (d < 20) return \"十\" + (d === 10 ? \"\" : cn[d-11]);\n  if (d === 20) return \"二十\";\n  if (d < 30) return \"二十\" + cn[d-21];\n  if (d === 30) return \"三十\";\n  return \"三十\" + cn[d-31];\n}\nconst todayCn = cn[now.getMonth()] + \"月\" + cnDay(now.getDate()) + \"日\";\n\nfunction renderStats() {\n  const all = Object.values(items);\n  const nDeciding = all.filter(v => v.status === \"deciding\").length;\n  const nComp = all.filter(v => v.status === \"companion\").length;\n  const dates = new Set();\n  all.forEach(v => v.entries.forEach(e => dates.add(e.date)));\n  document.getElementById(\"home-stats\").innerHTML =\n    `<b style=\"color:var(--accent);font-weight:600\">${nDeciding}</b> 在想　` +\n    `<b style=\"color:var(--ink);font-weight:600\">${nComp}</b> 陪伴中　` +\n    `陪伴你 <b style=\"color:var(--ink);font-weight:600\">${dates.size}</b> 天`;\n}\n\nlet firstRecordDone = false;\nlet composeMode = null;\nconst picked = { c: null, d: null };\n\nfunction fileToData(file, max, cb) {\n  const img = new Image();\n  img.onload = () => {\n    const s = Math.min(1, max / Math.max(img.width, img.height));\n    const c = document.createElement(\"canvas\");\n    c.width = Math.round(img.width * s);\n    c.height = Math.round(img.height * s);\n    c.getContext(\"2d\").drawImage(img, 0, 0, c.width, c.height);\n    URL.revokeObjectURL(img.src);\n    cb(c.toDataURL(\"image/jpeg\", 0.72));\n  };\n  img.src = URL.createObjectURL(file);\n}\nfunction pickPhoto(w) {\n  const inp = document.getElementById(w + \"-photo\");\n  const nameEl = document.getElementById(w + \"-photo-name\");\n  const prev = document.getElementById(w + \"-photo-preview\");\n  if (!inp.files[0]) {\n    picked[w] = null;\n    nameEl.textContent = \"\";\n    prev.style.display = \"none\";\n    return;\n  }\n  fileToData(inp.files[0], 900, data => {\n    picked[w] = data;\n    nameEl.textContent = \"· 已选好\";\n    nameEl.className = \"picked\";\n    prev.src = data;\n    prev.style.display = \"block\";\n  });\n}\nfunction resetPhoto(w) {\n  picked[w] = null;\n  document.getElementById(w + \"-photo\").value = \"\";\n  document.getElementById(w + \"-photo-name\").textContent = \"\";\n  document.getElementById(w + \"-photo-preview\").style.display = \"none\";\n}\n\nfunction openCreate() {\n  [\"c-name\", \"c-why\", \"c-price\", \"c-cat\"].forEach(id => document.getElementById(id).value = \"\");\n  calReset();\n  resetPhoto(\"c\");\n  document.getElementById(\"c-cal-slot\").appendChild(document.getElementById(\"c-cal-wrap\"));\n  document.getElementById(\"c-cal-wrap\").style.display = \"\";\n  calSelected = null;\n  renderCal();\n  document.getElementById(\"cstep1\").style.display = \"\";\n  document.getElementById(\"cstep2\").style.display = \"none\";\n  lastScreen = document.querySelector(\".screen.active\").id.replace(\"screen-\", \"\");\n  if (lastScreen === \"detail\" || lastScreen === \"create\") lastScreen = \"timeline\";\n  showScreen(\"create\");\n  document.getElementById(\"tabbar\").style.display = \"none\";\n  window.scrollTo(0, 0);\n}\nfunction cancelCreate() {\n  showScreen(lastScreen);\n  document.getElementById(\"tabbar\").style.display = \"\";\n}\nfunction createNext() {\n  if (!document.getElementById(\"c-name\").value.trim()) return;\n  document.getElementById(\"cstep1\").style.display = \"none\";\n  document.getElementById(\"cstep2\").style.display = \"\";\n}\nfunction dateToCn(dateStr) {\n  const dt = new Date(dateStr + \"T00:00:00\");\n  return cn[dt.getMonth()] + \"月\" + cnDay(dt.getDate()) + \"日\";\n}\nfunction daysDiff(dateStr) {\n  const dt = new Date(dateStr + \"T00:00:00\");\n  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());\n  return Math.max(1, Math.round((today - dt) / 86400000) + 1);\n}\nfunction saveCreate() {\n  const name = document.getElementById(\"c-name\").value.trim();\n  const why = document.getElementById(\"c-why\").value.trim() || \"还没想好怎么说。\";\n  const price = document.getElementById(\"c-price\").value.trim();\n  const cat = document.getElementById(\"c-cat\").value.trim() || \"未分类\";\n  const dateVal = calSelected;\n  const dateCn = dateVal ? dateToCn(dateVal) : todayCn;\n  const days = dateVal ? daysDiff(dateVal) : 1;\n  if (!catOrder.includes(cat)) catOrder.push(cat);\n  const meta = [[\"记录日期\", dateCn]];\n  if (price) meta.unshift([\"关注价格\", price]);\n  const key = \"u\" + Date.now();\n  items[key] = {\n    name, cat, status: \"deciding\",\n    state: \"犹豫中 · 第 \" + days + \" 天\", time: \"第 \" + days + \" 天\", month: monthOrder[0],\n    quote: \"「\" + why.split(/[。？！\\n]/)[0] + \"。」\",\n    sub: \"记于 · \" + dateCn,\n    entries: [{ date: dateCn, kind: \"起点\", text: why, img: picked.c || undefined }],\n    meta\n  };\n  renderTimeline(); renderIndex();\n  persist();\n  cancelCreate();\n  if (!firstRecordDone) {\n    firstRecordDone = true;\n    persist();\n    showRitual(\"这是你的第一条决策记录。慢慢来。\", \"第一条记录\", name);\n  }\n}\n\nconst profile = { name: \"\", avatar: null };\n\nfunction applyProfile() {\n  document.getElementById(\"me-name\").value = profile.name;\n  if (profile.avatar) {\n    const img = document.getElementById(\"me-avatar\");\n    img.src = profile.avatar;\n    img.style.display = \"block\";\n    document.getElementById(\"me-avatar-ph\").style.display = \"none\";\n    [\"home-avatar\", \"index-avatar\"].forEach(id => {\n      const el = document.getElementById(id);\n      if (el) { el.src = profile.avatar; el.style.display = \"block\"; }\n    });\n    [\"home-avatar-ph\", \"index-avatar-ph\"].forEach(id => {\n      const el = document.getElementById(id);\n      if (el) el.style.display = \"none\";\n    });\n  }\n  if (profile.name) {\n    [\"home-avatar-ph\", \"index-avatar-ph\"].forEach(id => {\n      const el = document.getElementById(id);\n      if (el) el.textContent = profile.name.slice(0, 1);\n    });\n  }\n}\nfunction setAvatar() {\n  const inp = document.getElementById(\"me-photo\");\n  if (!inp.files[0]) return;\n  fileToData(inp.files[0], 256, data => {\n    profile.avatar = data;\n    applyProfile();\n    persist();\n  });\n}\nfunction saveName() {\n  profile.name = document.getElementById(\"me-name\").value.trim();\n  applyProfile();\n  persist();\n}\n\nfunction persist() {\n  try {\n    localStorage.setItem(\"dj-v1\", JSON.stringify({ items, catOrder, firstRecordDone, profile }));\n  } catch (e) {\n    console.warn(\"存储失败，可能空间不足\", e);\n  }\n}\nfunction restore() {\n  let saved = null;\n  try { saved = JSON.parse(localStorage.getItem(\"dj-v1\") || \"null\"); } catch (e) {}\n  if (!saved) return;\n  Object.keys(items).forEach(k => delete items[k]);\n  Object.assign(items, saved.items);\n  catOrder.length = 0;\n  saved.catOrder.forEach(c => catOrder.push(c));\n  firstRecordDone = !!saved.firstRecordDone;\n  Object.assign(profile, saved.profile);\n}\n\nlet delMode = false;\n\nfunction renderEntries(v) {\n  document.getElementById(\"d-entries\").innerHTML = v.entries.map((e, i) =>\n    `<div class=\"entry\"><div class=\"e-head\"><span class=\"date\">${e.date}</span><span class=\"kind\">${e.kind}</span>${delMode ? `<span class=\"e-del\" onclick=\"delEntry(${i})\">×</span>` : \"\"}</div>${e.text ? `<p class=\"text\">${e.text}</p>` : \"\"}${e.img ? `<img src=\"${e.img}\">` : \"\"}</div>`\n  ).join(\"\");\n}\n\nfunction delEntry(i) {\n  const v = items[currentKey];\n  const kind = v.entries[i].kind;\n  v.entries.splice(i, 1);\n  if (i === 0 && v.entries.length) {\n    const f = v.entries[0];\n    v.quote = f.text ? \"「\" + f.text.split(/[。？！\\n]/)[0] + \"。」\" : \"\";\n  }\n  if (kind === \"决定购买\" || kind === \"决定不买\") {\n    v.status = \"deciding\";\n    v.state = \"犹豫中\";\n    v.time = \"犹豫中\";\n    v.sub = \"记于 · \" + (v.entries[0] ? v.entries[0].date : \"\");\n  }\n  if (kind === \"闲置\" || kind === \"告别\") {\n    v.status = \"companion\";\n    v.state = \"陪伴你\";\n    v.time = \"陪伴中\";\n  }\n  document.getElementById(\"d-state\").textContent = v.state;\n  renderActions(v);\n  renderEntries(v);\n  renderTimeline(); renderIndex();\n  persist();\n}\n\nfunction toggleDelMode() {\n  const v = items[currentKey];\n  if (delMode && v.entries.length === 0) {\n    delete items[currentKey];\n    renderTimeline(); renderIndex();\n    persist();\n    delMode = false;\n    closeDetail();\n    return;\n  }\n  delMode = !delMode;\n  document.getElementById(\"d-del-hint\").style.display = delMode ? \"block\" : \"none\";\n  renderEntries(v);\n}\nfunction exitDelMode() {\n  delMode = false;\n  document.getElementById(\"d-del-hint\").style.display = \"none\";\n  renderEntries(items[currentKey]);\n}\n\nfunction openSearch() {\n  lastScreen = document.querySelector(\".screen.active\").id.replace(\"screen-\", \"\");\n  if (lastScreen === \"search\" || lastScreen === \"detail\" || lastScreen === \"create\") lastScreen = \"timeline\";\n  showScreen(\"search\");\n  document.getElementById(\"tabbar\").style.display = \"none\";\n  document.getElementById(\"search-input\").value = \"\";\n  document.getElementById(\"search-results\").innerHTML = \"\";\n  document.getElementById(\"search-default\").style.display = \"\";\n  window.scrollTo(0, 0);\n  setTimeout(() => document.getElementById(\"search-input\").focus(), 50);\n}\nfunction closeSearch() {\n  showScreen(lastScreen);\n  document.getElementById(\"tabbar\").style.display = \"\";\n}\nfunction runSearch() {\n  const q = document.getElementById(\"search-input\").value.trim();\n  const box = document.getElementById(\"search-results\");\n  const def = document.getElementById(\"search-default\");\n  if (!q) { box.innerHTML = \"\"; def.style.display = \"\"; return; }\n  def.style.display = \"none\";\n  const hits = Object.keys(items).filter(k => {\n    const v = items[k];\n    return v.name.includes(q) || (v.quote || \"\").includes(q) ||\n      v.entries.some(e => (e.text || \"\").includes(q));\n  });\n  box.innerHTML = hits.length ? hits.map(k => {\n    const v = items[k];\n    return `<div class=\"row\" style=\"margin-top:10px\" onclick=\"openDetail('${k}')\">\n      <div class=\"row-top\"><span class=\"name\">${v.name}</span><span class=\"time\">${v.state}</span></div>\n      <p class=\"sub\">${v.sub}</p>\n    </div>`;\n  }).join(\"\") : `<p class=\"empty-note\">没有找到与「${q}」有关的记录。</p>`;\n}\n\nfunction openDrawer() {\n  document.getElementById(\"scrim\").classList.add(\"show\");\n  document.getElementById(\"drawer\").classList.add(\"show\");\n}\nfunction closeDrawer() {\n  document.getElementById(\"scrim\").classList.remove(\"show\");\n  document.getElementById(\"drawer\").classList.remove(\"show\");\n}\n\nfunction showRitual(text, label, name) {\n  document.getElementById(\"ritual-label\").textContent = label || \"决策日记\";\n  document.getElementById(\"ritual-name\").textContent = name || \"\";\n  document.getElementById(\"ritual-text\").textContent = text;\n  document.getElementById(\"ritual-date\").textContent = \"记于 \" + todayCn;\n  document.getElementById(\"ritual\").classList.add(\"show\");\n}\nfunction hideRitual() {\n  document.getElementById(\"ritual\").classList.remove(\"show\");\n}\n\nfunction renderActions(v) {\n  const el = document.getElementById(\"d-actions\");\n  if (v.status === \"deciding\") {\n    el.innerHTML = `<button class=\"btn\" onclick=\"startCompose('buy')\">带它回家</button>\n      <button class=\"btn ghost\" onclick=\"startCompose('pass')\">想清楚了，不买</button>\n      <button class=\"btn ghost\" onclick=\"startCompose('note')\">追记</button>`;\n  } else if (v.status === \"companion\") {\n    el.innerHTML = `<button class=\"btn\" onclick=\"startCompose('review')\">写回访</button>\n      <button class=\"btn ghost\" onclick=\"startCompose('idle')\">闲置了</button>\n      <button class=\"btn ghost\" onclick=\"startCompose('bye')\">告别</button>`;\n  } else if (v.status === \"idle\") {\n    el.innerHTML = `<button class=\"btn\" onclick=\"startCompose('revive')\">又用起来了</button>\n      <button class=\"btn ghost\" onclick=\"startCompose('bye')\">告别</button>`;\n  } else {\n    el.innerHTML = \"\";\n  }\n  el.style.display = \"flex\";\n}\nfunction startCompose(mode) {\n  composeMode = mode;\n  const ph = {\n    buy: \"为什么决定买？给未来的自己留一句。\",\n    pass: \"为什么不买了？写下来，它值得被记住。\",\n    review: \"它最近怎么样？\",\n    note: \"补充一点现在的想法。\",\n    idle: \"怎么闲置了？对自己说实话。\",\n    revive: \"它回到你的生活里了？\",\n    bye: \"怎么告别的？卖掉、送人，还是用坏了。\"\n  };\n  const t = document.getElementById(\"d-compose-text\");\n  t.value = \"\";\n  t.placeholder = ph[mode];\n  resetPhoto(\"d\");\n  composeCalUsed = false;\n  document.getElementById(\"d-date-line\").textContent = \"记录时间 · 今天\";\n  const calW = document.getElementById(\"c-cal-wrap\");\n  if (document.getElementById(\"d-cal-slot\").contains(calW)) calW.style.display = \"none\";\n  document.getElementById(\"d-compose-hint\").style.display = \"none\";\n  document.getElementById(\"d-photo-label\").textContent = mode === \"review\" ? \"拍一张它现在的样子\" : \"添加一张图（可不填）\";\n  document.getElementById(\"d-compose\").style.display = \"block\";\n  document.getElementById(\"d-actions\").style.display = \"none\";\n  t.focus();\n}\nfunction hideCompose() {\n  document.getElementById(\"d-compose\").style.display = \"none\";\n  document.getElementById(\"d-actions\").style.display = \"flex\";\n}\nfunction saveCompose() {\n  const v = items[currentKey];\n  const text = document.getElementById(\"d-compose-text\").value.trim();\n  const hint = document.getElementById(\"d-compose-hint\");\n  if (!text && !picked.d) {\n    hint.textContent = \"写一句，或加一张照片。\";\n    hint.style.display = \"block\";\n    return;\n  }\n  if (!text && [\"buy\", \"pass\", \"idle\", \"bye\"].includes(composeMode)) {\n    hint.textContent = \"这个决定值得写一句话。\";\n    hint.style.display = \"block\";\n    return;\n  }\n  hint.style.display = \"none\";\n  const entryIso = composeCalUsed && calSelected ? calSelected : null;\n  const entryDate = entryIso ? dateToCn(entryIso) : todayCn;\n  const entryTs = entryIso ? new Date(entryIso + \"T12:00:00\").getTime() : Date.now();\n  const days = (v.state.match(/第 (\\d+) 天/) || [])[1];\n  if (composeMode === \"buy\") {\n    v.entries.push({ ts: entryTs, date: entryDate, kind: \"决定购买\", text, img: picked.d || undefined });\n    v.buyTs = entryTs;\n    v.status = \"companion\"; v.state = \"陪伴你 · 刚开始\"; v.time = \"刚开始\"; v.sub = \"刚开始陪伴你\";\n    showRitual(days ? `犹豫了 ${days} 天，你决定带它回家。` : \"你想清楚了，决定带它回家。\", \"决定购买\", v.name);\n  } else if (composeMode === \"pass\") {\n    v.entries.push({ ts: entryTs, date: entryDate, kind: \"决定不买\", text, img: picked.d || undefined });\n    v.status = \"passed\"; v.state = \"想清楚了，没有买\"; v.time = monthOrder[0]; v.sub = \"想清楚于 · \" + monthOrder[0];\n    showRitual(days ? `这个念头陪了你 ${days} 天，你想清楚了。` : \"你想清楚了，放下了它。\", \"决定不买\", v.name);\n  } else if (composeMode === \"review\") {\n    v.entries.push({ ts: entryTs, date: entryDate, kind: \"回访\", text, img: picked.d || undefined });\n    v.sub = entryIso ? \"上次回访 · \" + entryDate : \"上次回访 · 刚刚\";\n  } else if (composeMode === \"idle\") {\n    v.entries.push({ ts: entryTs, date: entryDate, kind: \"闲置\", text, img: picked.d || undefined });\n    v.status = \"idle\"; v.state = \"闲置了\"; v.time = monthOrder[0]; v.sub = \"闲置于 · \" + monthOrder[0];\n  } else if (composeMode === \"revive\") {\n    v.entries.push({ ts: entryTs, date: entryDate, kind: \"回访\", text, img: picked.d || undefined });\n    v.status = \"companion\"; v.state = \"陪伴你 · 又开始了\"; v.time = \"又开始了\"; v.sub = \"上次回访 · 刚刚\";\n  } else if (composeMode === \"bye\") {\n    v.entries.push({ ts: entryTs, date: entryDate, kind: \"告别\", text, img: picked.d || undefined });\n    v.status = \"ended\"; v.state = \"告别了 · \" + monthOrder[0]; v.time = monthOrder[0]; v.sub = \"告别于 · \" + monthOrder[0];\n    showRitual(\"它陪伴过你的日子，都记在这里了。\", \"告别\", v.name);\n  } else {\n    v.entries.push({ ts: entryTs, date: entryDate, kind: \"追记\", text, img: picked.d || undefined });\n  }\n  renderTimeline(); renderIndex();\n  persist();\n  openDetail(currentKey);\n}\n\n/* ── Calendar ── */\nlet calYear = now.getFullYear(), calMonth = now.getMonth(), calSelected = null;\n\nfunction renderCal() {\n  const title = document.getElementById(\"cal-title\");\n  title.textContent = calYear + \" 年 \" + cn[calMonth] + \"月\";\n  const grid = document.getElementById(\"cal-grid\");\n  const first = new Date(calYear, calMonth, 1).getDay();\n  const days = new Date(calYear, calMonth + 1, 0).getDate();\n  let html = \"\";\n  for (let i = 0; i < first; i++) html += `<span class=\"cal-cell empty\"></span>`;\n  for (let d = 1; d <= days; d++) {\n    const iso = calYear + \"-\" + String(calMonth + 1).padStart(2, \"0\") + \"-\" + String(d).padStart(2, \"0\");\n    const isToday = d === now.getDate() && calMonth === now.getMonth() && calYear === now.getFullYear();\n    const isSel = calSelected === iso;\n    const cls = [\"cal-cell\"];\n    if (isToday) cls.push(\"today\");\n    if (isSel) cls.push(\"selected\");\n    html += `<span class=\"${cls.join(\" \")}\" onclick=\"calPick('${iso}')\">${d}</span>`;\n  }\n  grid.innerHTML = html;\n  document.getElementById(\"cal-y\").value = calYear;\n  document.getElementById(\"cal-m\").value = calMonth + 1;\n  document.getElementById(\"cal-d\").value = calSelected ? parseInt(calSelected.split(\"-\")[2]) : \"\";\n}\n\nfunction calPick(iso) {\n  calSelected = iso;\n  const parts = iso.split(\"-\");\n  calYear = parseInt(parts[0]);\n  calMonth = parseInt(parts[1]) - 1;\n  renderCal();\n  syncComposeDateLabel();\n}\nfunction syncComposeDateLabel() {\n  if (calSelected && document.getElementById(\"d-cal-slot\").contains(document.getElementById(\"c-cal-wrap\"))) {\n    document.getElementById(\"d-date-line\").textContent = \"记录时间 · \" + dateToCn(calSelected);\n  }\n}\n\nfunction calNav(dir) {\n  calMonth += dir;\n  if (calMonth < 0) { calMonth = 11; calYear--; }\n  if (calMonth > 11) { calMonth = 0; calYear++; }\n  renderCal();\n}\n\nfunction calManualGo() {\n  const y = parseInt(document.getElementById(\"cal-y\").value);\n  const m = parseInt(document.getElementById(\"cal-m\").value);\n  const d = parseInt(document.getElementById(\"cal-d\").value);\n  if (y && m >= 1 && m <= 12) {\n    calYear = y;\n    calMonth = m - 1;\n    if (d >= 1 && d <= new Date(y, m, 0).getDate()) {\n      calSelected = y + \"-\" + String(m).padStart(2, \"0\") + \"-\" + String(d).padStart(2, \"0\");\n    }\n    renderCal();\n    syncComposeDateLabel();\n  }\n}\n\nlet composeCalUsed = false;\nfunction toggleComposeCal() {\n  const cal = document.getElementById(\"c-cal-wrap\");\n  const slot = document.getElementById(\"d-cal-slot\");\n  if (!slot.contains(cal) || cal.style.display === \"none\") {\n    slot.appendChild(cal);\n    cal.style.display = \"\";\n    composeCalUsed = true;\n    calReset();\n    syncComposeDateLabel();\n  } else {\n    cal.style.display = \"none\";\n  }\n}\n\nfunction calReset() {\n  calYear = now.getFullYear();\n  calMonth = now.getMonth();\n  const td = now.getFullYear() + \"-\" + String(now.getMonth() + 1).padStart(2, \"0\") + \"-\" + String(now.getDate()).padStart(2, \"0\");\n  calSelected = td;\n  renderCal();\n}\n\nrestore();\napplyProfile();\nrenderTimeline();\nrenderIndex();\n\n/* PWA：注册 service worker，让它可安装到主屏、离线可用。\n   file:// 直接打开时没有 SW 环境，静默跳过，不影响本地预览。 */\nif (\"serviceWorker\" in navigator && location.protocol.startsWith(\"http\")) {\n  window.addEventListener(\"load\", () => {\n    navigator.serviceWorker.register(\"sw.js\").catch(() => {});\n  });\n}\n<\/script>\n</body>\n</html>\n";
+  const defaults = { filtersY: 40.5, listY: 30.5 };
+  const storageKey = "decision-srcdoc-index-adjuster-v1";
+  const fields = ["filtersY", "listY"];
+  let values = { ...defaults };
+  try { values = { ...values, ...JSON.parse(localStorage.getItem(storageKey) || "{}") }; } catch (e) {}
+  const timelineFrame = document.getElementById("timeline-frame");
+  const indexFrame = document.getElementById("index-frame");
 
-function px(v) { return v + "px"; }
+  function injectedScript(page) {
+    return '<script>' + `
+(() => {
+  const page = ${JSON.stringify(page)};
+  let lastValues = { filtersY: 40.5, listY: 30.5 };
+  function px(n) { return Number(n).toFixed(1).replace(".0", "") + "px"; }
+  function selectPage() {
+    document.querySelectorAll(".screen").forEach(screen => {
+      screen.classList.toggle("active", screen.id === "screen-" + page);
+    });
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.classList.toggle("on", tab.dataset.t === page);
+    });
+    window.scrollTo(0, 0);
+  }
+  function apply(values) {
+    lastValues = { ...lastValues, ...(values || {}) };
+    selectPage();
+    if (page !== "index") return;
+    const filters = document.querySelector("#screen-index .filters");
+    const list = document.getElementById("index-list");
+    if (filters) filters.style.top = px(lastValues.filtersY);
+    if (list) list.style.top = px(lastValues.listY);
+  }
+  window.addEventListener("message", event => {
+    const data = event.data || {};
+    if (data.type === "decision-preview-values") apply(data.values);
+  });
+  selectPage();
+  setTimeout(() => apply(lastValues), 80);
+  setTimeout(() => apply(lastValues), 260);
+  setTimeout(() => apply(lastValues), 700);
+})();
+` + '<\/script>';
+  }
 
-function buildIndexCss() {
-  return `
-    #screen-index .header {
-      position: relative !important;
-      left: ${px(values.indexSubX)} !important;
-      top: ${px(values.indexSubY)} !important;
-    }
-    #screen-index .page-sub {
-      font-size: ${px(values.indexSubSize)} !important;
-    }
-    #screen-index .filters {
-      position: relative !important;
-      top: ${px(values.indexFiltersY)} !important;
-      transform: scale(${values.indexFiltersScale}) !important;
-      transform-origin: left top !important;
-    }
-    #screen-index #index-list {
-      position: relative !important;
-      top: ${px(values.indexWhiteY)} !important;
-    }
-  `;
-}
+  function buildPreviewDoc(page) {
+    const base = '<base href="' + new URL('prototype/', window.location.href).href + '">';
+    return prototypeHtml.replace(/<head>/i, '<head>' + base).replace(/<\/body>/i, injectedScript(page) + '</body>');
+  }
 
-function postToFrame(id, screen, css) {
-  const frame = document.getElementById(id);
-  if (!frame.contentWindow) return;
-  frame.contentWindow.postMessage({
-    type: "decision-layout-preview",
-    screen,
-    css: css || ""
-  }, "*");
-}
+  timelineFrame.srcdoc = buildPreviewDoc("timeline");
+  indexFrame.srcdoc = buildPreviewDoc("index");
+  function px(n) { return Number(n).toFixed(1).replace(".0", "") + "px"; }
+  function renderOutput() {
+    document.getElementById("output").textContent =
+`页面：索引页
 
-function draw() {
-  postToFrame("timeline-frame", "timeline", "");
-  postToFrame("index-frame", "index", buildIndexCss());
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
-  renderOutput();
-}
+全部 到 告别：上下相对位置
+上下 ${px(values.filtersY)}
 
-function renderControls() {
-  document.getElementById("controls").innerHTML = CONFIG.map(group =>
-    '<div class="group"><p class="group-title">' + group.title + '</p>' +
-    group.keys.map(k =>
-      '<div class="ctl"><label>' + k[1] + '</label><input type="range" id="' + k[0] + '" min="' + k[2] + '" max="' + k[3] + '" step="' + (k[5] === "x" ? "0.01" : "0.5") + '" value="' + values[k[0]] + '"><span class="val" id="' + k[0] + '-val">' + formatVal(k, values[k[0]]) + '</span></div>'
-    ).join("") + '</div>'
-  ).join("");
-  CONFIG.flatMap(group => group.keys).forEach(k => {
-    const el = document.getElementById(k[0]);
-    el.addEventListener("input", () => {
-      values[k[0]] = parseFloat(el.value);
-      document.getElementById(k[0] + "-val").textContent = formatVal(k, values[k[0]]);
-      draw();
+数码及以下白框：上下相对位置
+上下 ${px(values.listY)}`;
+  }
+  function sendPreview() { indexFrame.contentWindow?.postMessage({ type: "decision-preview-values", values }, "*"); }
+  function sync() {
+    fields.forEach(key => {
+      document.getElementById(key).value = values[key];
+      document.getElementById(key + "Out").textContent = px(values[key]);
+    });
+    localStorage.setItem(storageKey, JSON.stringify(values));
+    renderOutput();
+    sendPreview();
+  }
+  fields.forEach(key => {
+    document.getElementById(key).addEventListener("input", event => {
+      values[key] = Number(event.target.value);
+      sync();
     });
   });
-}
-
-function formatVal(k, v) {
-  return k[5] === "x" ? Number(v).toFixed(2) + "x" : v + "px";
-}
-
-function renderOutput() {
-  document.getElementById("out").textContent =
-    "页面：索引页\n\n" +
-    "你认真想过 10 件东西：上下左右相对位置与大小\n" +
-    "左右 " + values.indexSubX + "px   上下 " + values.indexSubY + "px   字号 " + values.indexSubSize + "px\n\n" +
-    "全部 到 告别：上下与等比例大小调整\n" +
-    "上下 " + values.indexFiltersY + "px   比例 " + Number(values.indexFiltersScale).toFixed(2) + "x\n\n" +
-    "数码与白框：上下调整\n" +
-    "上下 " + values.indexWhiteY + "px";
-}
-
-function resetValues() {
-  values = { ...defaults };
-  renderControls();
-  draw();
-}
-
-function copyValues() {
-  navigator.clipboard.writeText(document.getElementById("out").textContent).then(
-    () => alert("已复制当前数值。"),
-    () => alert("复制失败，可以手动选中下方数值复制。")
-  );
-}
-
-document.getElementById("timeline-frame").addEventListener("load", draw);
-document.getElementById("index-frame").addEventListener("load", draw);
-renderControls();
-renderOutput();
+  indexFrame.addEventListener("load", () => {
+    setTimeout(sendPreview, 80);
+    setTimeout(sendPreview, 260);
+    setTimeout(sendPreview, 700);
+  });
+  document.getElementById("resetBtn").addEventListener("click", () => { values = { ...defaults }; sync(); });
+  document.getElementById("copyBtn").addEventListener("click", async () => {
+    const text = document.getElementById("output").textContent;
+    try { await navigator.clipboard.writeText(text); }
+    catch (e) {
+      const area = document.createElement("textarea");
+      area.value = text;
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand("copy");
+      area.remove();
+    }
+  });
+  sync();
 </script>
 </body>
 </html>

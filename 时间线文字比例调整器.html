@@ -244,7 +244,7 @@
 
   <aside class="panel">
     <h1>降噪耳机文字比例调整器</h1>
-    <p class="hint">只调整回访白框里这句话的整体比例。白框位置和大小保持当前 prototype 定稿。</p>
+    <p class="hint">只调整回访白框里这句话的整体比例和上下位置。白框位置和大小保持当前 prototype 定稿。</p>
     <div id="controls"></div>
     <div class="actions">
       <button onclick="resetValues()">重置</button>
@@ -256,17 +256,17 @@
 
 <script>
 const CONFIG = [
-  { title: "降噪耳机白框文字：等比例大小", keys: [
-    ["reviewTextScale", "比例", 0.8, 1.6, 1, "x"]
+  { title: "降噪耳机白框文字：等比例大小与上下", keys: [
+    ["reviewTextScale", "比例", 0.8, 1.6, 1.05, "x"], ["reviewTextY", "上下", -24, 24, 0, "px"]
   ] }
 ];
-const STORAGE_KEY = "decision-layout-review-text-scale-v1";
+const STORAGE_KEY = "decision-layout-review-text-scale-v2";
 const defaults = {};
 CONFIG.forEach(group => group.keys.forEach(k => defaults[k[0]] = k[4]));
 let values = { ...defaults, ...(JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {}) };
 
 function draw() {
-  document.getElementById("review-text").style.transform = "scale(" + values.reviewTextScale + ")";
+  document.getElementById("review-text").style.transform = "translateY(" + values.reviewTextY + "px) scale(" + values.reviewTextScale + ")";
   localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
   renderOutput();
 }
@@ -275,28 +275,28 @@ function renderControls() {
   document.getElementById("controls").innerHTML = CONFIG.map(group =>
     '<div class="group"><p class="group-title">' + group.title + '</p>' +
     group.keys.map(k =>
-      '<div class="ctl"><label>' + k[1] + '</label><input type="range" id="' + k[0] + '" min="' + k[2] + '" max="' + k[3] + '" step="0.01" value="' + values[k[0]] + '"><span class="val" id="' + k[0] + '-val">' + formatVal(values[k[0]]) + '</span></div>'
+      '<div class="ctl"><label>' + k[1] + '</label><input type="range" id="' + k[0] + '" min="' + k[2] + '" max="' + k[3] + '" step="' + (k[5] === "x" ? "0.01" : "0.5") + '" value="' + values[k[0]] + '"><span class="val" id="' + k[0] + '-val">' + formatVal(k, values[k[0]]) + '</span></div>'
     ).join("") + '</div>'
   ).join("");
   CONFIG.flatMap(group => group.keys).forEach(k => {
     const el = document.getElementById(k[0]);
     el.addEventListener("input", () => {
       values[k[0]] = parseFloat(el.value);
-      document.getElementById(k[0] + "-val").textContent = formatVal(values[k[0]]);
+      document.getElementById(k[0] + "-val").textContent = formatVal(k, values[k[0]]);
       draw();
     });
   });
 }
 
-function formatVal(v) {
-  return Number(v).toFixed(2) + "x";
+function formatVal(k, v) {
+  return k[5] === "x" ? Number(v).toFixed(2) + "x" : v + "px";
 }
 
 function renderOutput() {
   document.getElementById("out").textContent =
     "页面：时间线页\n\n" +
-    "降噪耳机白框文字：等比例大小\n" +
-    "比例 " + formatVal(values.reviewTextScale);
+    "降噪耳机白框文字：等比例大小与上下\n" +
+    "比例 " + Number(values.reviewTextScale).toFixed(2) + "x   上下 " + values.reviewTextY + "px";
 }
 
 function resetValues() {

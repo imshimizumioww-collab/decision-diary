@@ -197,6 +197,11 @@
     width: 100%;
     min-height: 68.5px;
   }
+  #screen-timeline .review-line .review-text-scale {
+    display: inline-block;
+    transform: translateY(0px) scale(1.05);
+    transform-origin: left center;
+  }
   #screen-timeline #timeline-list {
     position: relative;
     top: 35px;
@@ -236,6 +241,8 @@
   #screen-index .filters {
     position: relative;
     top: 40.5px;
+    flex-wrap: nowrap;
+    overflow-x: visible;
     transform: scale(1);
     transform-origin: left top;
   }
@@ -270,7 +277,7 @@
     <div class="header" style="padding-top: 8px;">
       <p class="page-sub" id="home-stats" style="margin-top: 0;"></p>
     </div>
-    <p class="review-line" onclick="openDetail('headphone')">降噪耳机已经陪你三个月了，感觉如何？</p>
+    <p class="review-line" onclick="openDetail('headphone')"><span class="review-text-scale">降噪耳机已经陪你三个月了，感觉如何？</span></p>
     <div id="timeline-list"></div>
   </div>
 
