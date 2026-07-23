@@ -78,10 +78,12 @@
   .search-cat-title { font-size: 20px; font-weight: 700; margin: 28px 0 4px; }
   .search-catrow { display: flex; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 15px; color: var(--ink); cursor: pointer; }
   .search-catrow svg { color: var(--ink-soft); }
-  .scrim { position: fixed; inset: 0; background: #1C1B1A; display: none; z-index: 20; }
+  .scrim { position: fixed; inset: 0; background: transparent; display: none; z-index: 20; }
   .scrim.show { display: block; }
-  body.sheet-open { overflow: hidden; height: 100vh; }
-  .drawer { position: fixed; left: 0; right: 0; bottom: 0; top: calc(env(safe-area-inset-top) + 44px); background: #F0ECEA; z-index: 21; transform: translateY(103%); transition: transform .32s cubic-bezier(.32,.72,.35,1); padding: 10px 24px 40px; overflow-y: auto; border-radius: 16px 16px 0 0; }
+  body.sheet-open { overflow: hidden; height: 100vh; background: #000; }
+  #stage { min-height: 100vh; background: var(--paper); transform-origin: 50% 0; transition: transform .32s cubic-bezier(.32,.72,.35,1), border-radius .32s ease; }
+  body.sheet-open #stage { transform: translateY(34px) scale(0.94); border-radius: 14px; overflow: hidden; height: 100vh; }
+  .drawer { position: fixed; left: 0; right: 0; bottom: 0; top: max(44px, calc(env(safe-area-inset-top) + 10px)); background: #F0ECEA; z-index: 21; transform: translateY(103%); transition: transform .32s cubic-bezier(.32,.72,.35,1); padding: 10px 24px 40px; overflow-y: auto; border-radius: 16px 16px 0 0; }
   .drawer.show { transform: translateY(0); }
   .sheet-head { display: flex; align-items: center; justify-content: center; position: relative; padding: 12px 0 18px; }
   .sheet-head .sheet-title { font-size: 17px; font-weight: 600; color: var(--ink); }
@@ -265,6 +267,7 @@
 </style>
 </head>
 <body>
+<div id="stage">
 <div class="app">
 
   <div class="screen active" id="screen-timeline">
@@ -401,6 +404,15 @@
 
 </div>
 
+<div class="tabbar" id="tabbar">
+  <div class="tabbar-inner">
+    <span class="tab on" data-t="timeline">时间线</span>
+    <div class="fab" onclick="openCreate()">＋</div>
+    <span class="tab" data-t="index">索引</span>
+  </div>
+</div>
+</div>
+
 <div class="scrim" id="scrim" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
   <div class="sheet-head">
@@ -441,14 +453,6 @@
       <p class="r-date" id="ritual-date"></p>
     </div>
     <p class="small">轻触任意处继续</p>
-  </div>
-</div>
-
-<div class="tabbar" id="tabbar">
-  <div class="tabbar-inner">
-    <span class="tab on" data-t="timeline">时间线</span>
-    <div class="fab" onclick="openCreate()">＋</div>
-    <span class="tab" data-t="index">索引</span>
   </div>
 </div>
 
@@ -984,15 +988,66 @@ function runSearch() {
 }
 
 function openDrawer() {
+  clearSheetInline();
   document.getElementById("scrim").classList.add("show");
   document.getElementById("drawer").classList.add("show");
   document.body.classList.add("sheet-open");
 }
 function closeDrawer() {
+  clearSheetInline();
   document.getElementById("scrim").classList.remove("show");
   document.getElementById("drawer").classList.remove("show");
   document.body.classList.remove("sheet-open");
 }
+function clearSheetInline() {
+  const st = document.getElementById("stage"), dw = document.getElementById("drawer");
+  st.style.transform = ""; st.style.borderRadius = ""; st.style.transition = "";
+  dw.style.transform = ""; dw.style.transition = "";
+}
+
+(function () {
+  const dw = document.getElementById("drawer");
+  const st = document.getElementById("stage");
+  let startY = null, dragY = 0, dragging = false;
+  dw.addEventListener("touchstart", e => {
+    startY = e.touches[0].clientY;
+    dragY = 0;
+    dragging = false;
+  }, { passive: true });
+  dw.addEventListener("touchmove", e => {
+    if (startY === null) return;
+    const dy = e.touches[0].clientY - startY;
+    if (!dragging) {
+      if (dy > 8 && dw.scrollTop <= 0) {
+        dragging = true;
+        dw.style.transition = "none";
+        st.style.transition = "none";
+      } else return;
+    }
+    e.preventDefault();
+    dragY = Math.max(0, dy);
+    dw.style.transform = "translateY(" + dragY + "px)";
+    const h = window.innerHeight;
+    const p = Math.min(1, dragY / (h * 0.7));
+    const s = 0.94 + 0.06 * p;
+    const ty = 34 * (1 - p);
+    st.style.transform = "translateY(" + ty + "px) scale(" + s + ")";
+    st.style.borderRadius = (14 * (1 - p)) + "px";
+  }, { passive: false });
+  dw.addEventListener("touchend", () => {
+    if (!dragging) { startY = null; return; }
+    dw.style.transition = "";
+    st.style.transition = "transform .32s cubic-bezier(.32,.72,.35,1), border-radius .32s ease";
+    if (dragY > window.innerHeight * 0.22) {
+      closeDrawer();
+    } else {
+      dw.style.transform = "";
+      st.style.transform = "";
+      st.style.borderRadius = "";
+    }
+    startY = null; dragging = false; dragY = 0;
+  });
+})();
 
 function showRitual(text, label, name) {
   document.getElementById("ritual-label").textContent = label || "决策日记";
