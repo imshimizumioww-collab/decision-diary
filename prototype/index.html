@@ -157,6 +157,8 @@
   .settings-row { padding: 15px 16px; border-bottom: 1px solid var(--line-faint); font-size: 14.5px; color: var(--ink); display: flex; justify-content: space-between; }
   .settings-row:last-child { border-bottom: none; }
   .settings-row span:last-child { color: var(--gray-faint); font-size: 13px; }
+  .settings-group + .settings-group { margin-top: 14px; }
+  .settings-row.sub-row span { font-size: 12.5px; color: var(--gray-light); }
   .empty-note { font-family: var(--serif); font-size: 13.5px; color: var(--gray-light); line-height: 1.8; margin-top: 40px; text-align: center; }
 
   /* ── 时间线页固定数值 / 索引页初始对齐数值：2026-07-23 ── */
@@ -409,10 +411,16 @@
     </div>
   </div>
   <div class="settings-group">
-    <div class="settings-row"><span>回访提醒</span><span>每周至多一条</span></div>
-    <div class="settings-row"><span>iCloud 同步</span><span>已开启</span></div>
-    <div class="settings-row"><span>导出全部记录</span><span></span></div>
-    <div class="settings-row"><span>关于</span><span></span></div>
+    <div class="settings-row" onclick="cycleRemind()"><span>回访提醒</span><span id="set-remind">每周至多一条</span></div>
+    <div class="settings-row"><span>同步</span><span>开</span></div>
+    <div class="settings-row sub-row"><span>上一次同步</span><span id="set-sync-time"></span></div>
+  </div>
+  <div class="settings-group">
+    <div class="settings-row" onclick="showOnThisDay()"><span>那年今日</span><span>›</span></div>
+    <div class="settings-row" onclick="exportAll()"><span>导出全部记录</span><span>›</span></div>
+  </div>
+  <div class="settings-group">
+    <div class="settings-row"><span>关于</span><span>0.1</span></div>
   </div>
   <p class="empty-note">这本日记属于你自己。<br>没有会员，没有推送轰炸，没有统计报表。</p>
 </div>
@@ -820,9 +828,52 @@ function saveName() {
 function persist() {
   try {
     localStorage.setItem("dj-v1", JSON.stringify({ items, catOrder, firstRecordDone, profile }));
+    localStorage.setItem("dj-sync", String(Date.now()));
+    updateSyncTime();
   } catch (e) {
     console.warn("存储失败，可能空间不足", e);
   }
+}
+
+function updateSyncTime() {
+  const el = document.getElementById("set-sync-time");
+  if (!el) return;
+  const t = parseInt(localStorage.getItem("dj-sync") || "0");
+  if (!t) { el.textContent = "尚未记录"; return; }
+  const d = new Date(t);
+  el.textContent = `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日 ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+const remindLevels = ["每周至多一条", "每月至多一条", "关闭"];
+function cycleRemind() {
+  const cur = profile.remind || remindLevels[0];
+  const next = remindLevels[(remindLevels.indexOf(cur) + 1) % remindLevels.length];
+  profile.remind = next;
+  document.getElementById("set-remind").textContent = next;
+  persist();
+}
+
+function showOnThisDay() {
+  const pool = [];
+  Object.values(items).forEach(v => v.entries.forEach(e => {
+    if (e.date !== todayCn) pool.push({ name: v.name, e });
+  }));
+  if (!pool.length) {
+    showRitual("这里还没有旧日的记录。继续写，一年后的今天再来看。", "那年今日", "");
+    return;
+  }
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  closeDrawer();
+  showRitual(pick.e.text || "（一张照片）", pick.e.date + " · " + pick.e.kind, pick.name);
+}
+
+function exportAll() {
+  const blob = new Blob([JSON.stringify({ items, profile }, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "决策日记-导出.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 function restore() {
   let saved = null;
@@ -1130,6 +1181,8 @@ restore();
 applyProfile();
 renderTimeline();
 renderIndex();
+if (profile.remind) document.getElementById("set-remind").textContent = profile.remind;
+updateSyncTime();
 
 /* PWA：注册 service worker，让它可安装到主屏、离线可用。
    file:// 直接打开时没有 SW 环境，静默跳过，不影响本地预览。 */
