@@ -78,9 +78,11 @@
   .search-cat-title { font-size: 20px; font-weight: 700; margin: 28px 0 4px; }
   .search-catrow { display: flex; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 15px; color: var(--ink); cursor: pointer; }
   .search-catrow svg { color: var(--ink-soft); }
-  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.25); display: none; z-index: 20; }
+  .scrim { position: fixed; inset: 0; background: rgba(255,255,255,0.55); display: none; z-index: 20; }
   .scrim.show { display: block; }
-  .drawer { position: fixed; inset: 0; background: var(--paper); z-index: 21; transform: translateY(103%); transition: transform .32s cubic-bezier(.32,.72,.35,1); padding: calc(10px + env(safe-area-inset-top)) 24px 40px; overflow-y: auto; border-radius: 16px 16px 0 0; }
+  .app { transition: transform .32s cubic-bezier(.32,.72,.35,1); transform-origin: center top; }
+  body.sheet-open .app { transform: scale(0.95); }
+  .drawer { position: fixed; left: 0; right: 0; bottom: 0; top: calc(env(safe-area-inset-top) + 44px); background: var(--paper); z-index: 21; transform: translateY(103%); transition: transform .32s cubic-bezier(.32,.72,.35,1); padding: 10px 24px 40px; overflow-y: auto; border-radius: 16px 16px 0 0; }
   .drawer.show { transform: translateY(0); }
   .sheet-head { display: flex; align-items: center; justify-content: center; position: relative; padding: 12px 0 18px; }
   .sheet-head .sheet-title { font-size: 17px; font-weight: 600; color: var(--ink); }
@@ -429,7 +431,6 @@
   <div class="settings-group">
     <div class="settings-row"><span>关于</span><span>0.1</span></div>
   </div>
-  <p class="empty-note">这本日记属于你自己。<br>没有会员，没有推送轰炸，没有统计报表。</p>
 </div>
 
 <div class="overlay" id="ritual" onclick="hideRitual()">
@@ -986,10 +987,12 @@ function runSearch() {
 function openDrawer() {
   document.getElementById("scrim").classList.add("show");
   document.getElementById("drawer").classList.add("show");
+  document.body.classList.add("sheet-open");
 }
 function closeDrawer() {
   document.getElementById("scrim").classList.remove("show");
   document.getElementById("drawer").classList.remove("show");
+  document.body.classList.remove("sheet-open");
 }
 
 function showRitual(text, label, name) {
