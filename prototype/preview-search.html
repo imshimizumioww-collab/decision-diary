@@ -350,17 +350,6 @@
     <div id="index-list"></div>
   </div>
 
-  <div class="screen" id="screen-search">
-    <div class="search-bar">
-      <div class="search-field">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
-        <input id="search-input" placeholder="搜索" oninput="runSearch()">
-      </div>
-      <span class="search-cancel" onclick="closeSearch()">取消</span>
-    </div>
-    <div id="search-default"></div>
-    <div id="search-results"></div>
-  </div>
 
   <div class="screen" id="screen-detail">
     <p class="back" onclick="closeDetail()">‹ 返回</p>
@@ -502,6 +491,26 @@
   <p class="bio-name" id="ip-name"></p>
   <p class="bio-state" id="ip-state"></p>
   <div id="ip-entries"></div>
+</div>
+
+<div class="scrim" id="search-scrim" onclick="closeSearch()"></div>
+<div class="drawer" id="search-sheet">
+  <div class="search-bar">
+    <div class="search-field">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+      <input id="search-input" placeholder="搜物品名，或你写下的任何一句" oninput="runSearch()">
+    </div>
+    <span class="search-cancel" onclick="closeSearch()">取消</span>
+  </div>
+  <div id="search-default">
+    <p class="idx-cat" id="recent-title">最近看过</p>
+    <div class="idx-group" id="search-recent"></div>
+    <p class="idx-cat">快捷</p>
+    <div class="idx-group">
+      <div class="idx-row" onclick="searchPhotos()"><div class="rtop"><span class="rname">只看有照片的记录</span><span class="rtime" id="photo-count"></span></div></div>
+    </div>
+  </div>
+  <div id="search-results"></div>
 </div>
 
 <div class="overlay" id="ritual" onclick="hideRitual()">
@@ -1026,20 +1035,38 @@ function exitDelMode() {
   renderEntries(items[currentKey]);
 }
 
+let recentViewed = [];
+function recordRecent(key) {
+  recentViewed = [key, ...recentViewed.filter(k => k !== key)].slice(0, 6);
+}
+function searchRowHtml(k, right) {
+  const v = items[k];
+  return `<div class="idx-row" onclick="openDetail('${k}')"><div class="rtop"><span class="rname">${v.name}</span><span class="rtime">${right}</span></div><p class="rsub">${v.sub}</p></div>`;
+}
+function renderSearchDefault() {
+  const recent = recentViewed.filter(k => items[k]).slice(0, 4);
+  document.getElementById("recent-title").style.display = recent.length ? "" : "none";
+  document.getElementById("search-recent").style.display = recent.length ? "" : "none";
+  document.getElementById("search-recent").innerHTML = recent.map(k => searchRowHtml(k, items[k].time)).join("");
+  const nPhoto = Object.keys(items).filter(k => items[k].entries.some(e => e.img)).length;
+  document.getElementById("photo-count").textContent = nPhoto ? nPhoto + " ›" : "0";
+}
 function openSearch() {
-  lastScreen = document.querySelector(".screen.active").id.replace("screen-", "");
-  if (lastScreen === "search" || lastScreen === "detail" || lastScreen === "create") lastScreen = "timeline";
-  showScreen("search");
-  document.getElementById("tabbar").style.display = "none";
   document.getElementById("search-input").value = "";
   document.getElementById("search-results").innerHTML = "";
   document.getElementById("search-default").style.display = "";
-  window.scrollTo(0, 0);
-  setTimeout(() => document.getElementById("search-input").focus(), 50);
+  renderSearchDefault();
+  openSheet("search-sheet", "search-scrim");
+  setTimeout(() => document.getElementById("search-input").focus(), 320);
 }
-function closeSearch() {
-  showScreen(lastScreen);
-  document.getElementById("tabbar").style.display = "";
+function closeSearch() { closeSheet("search-sheet", "search-scrim"); }
+function searchPhotos() {
+  document.getElementById("search-default").style.display = "none";
+  const box = document.getElementById("search-results");
+  const hits = Object.keys(items).filter(k => items[k].entries.some(e => e.img));
+  box.innerHTML = hits.length
+    ? `<p class="idx-cat">有照片的记录 · ${hits.length}</p><div class="idx-group">${hits.map(k => searchRowHtml(k, items[k].time)).join("")}</div>`
+    : `<p class="empty-note">还没有带照片的记录。</p>`;
 }
 function runSearch() {
   const q = document.getElementById("search-input").value.trim();
@@ -1052,13 +1079,9 @@ function runSearch() {
     return v.name.includes(q) || (v.quote || "").includes(q) ||
       v.entries.some(e => (e.text || "").includes(q));
   });
-  box.innerHTML = hits.length ? hits.map(k => {
-    const v = items[k];
-    return `<div class="row" style="margin-top:10px" onclick="openDetail('${k}')">
-      <div class="row-top"><span class="name">${v.name}</span><span class="time">${v.state}</span></div>
-      <p class="sub">${v.sub}</p>
-    </div>`;
-  }).join("") : `<p class="empty-note">没有找到与「${q}」有关的记录。</p>`;
+  box.innerHTML = hits.length
+    ? `<div class="idx-group" style="margin-top:8px">${hits.map(k => searchRowHtml(k, items[k].state)).join("")}</div>`
+    : `<p class="empty-note">没有找到与「${q}」有关的记录。</p>`;
 }
 
 function openDrawer() { openSheet("drawer", "scrim"); }
