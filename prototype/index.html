@@ -84,6 +84,15 @@
   .search-field input { flex: 1; background: transparent; border: none; outline: none; font-size: 16px; color: var(--ink); }
   .search-field input::placeholder { color: var(--gray-faint); }
   .search-cancel { font-size: 15px; color: var(--accent); cursor: pointer; flex-shrink: 0; }
+  .idx-cat { font-size: 13px; font-weight: 500; color: var(--gray); margin: 22px 2px 10px; }
+  .idx-group { background: var(--card); border-radius: 16px; overflow: hidden; }
+  .idx-row { padding: 14px 16px; border-bottom: 1px solid var(--line-faint); cursor: pointer; transition: opacity .2s; }
+  .idx-row:last-child { border-bottom: none; }
+  .idx-row:active { opacity: 0.6; }
+  .idx-row .rtop { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .idx-row .rname { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+  .idx-row .rtime { font-size: 12px; color: var(--gray-faint); flex-shrink: 0; }
+  .idx-row .rsub { font-size: 11.5px; color: var(--gray-faint); margin-top: 5px; }
   .search-cat-title { font-size: 20px; font-weight: 700; margin: 28px 0 4px; }
   .search-catrow { display: flex; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 15px; color: var(--ink); cursor: pointer; }
   .search-catrow svg { color: var(--ink-soft); }
@@ -350,17 +359,6 @@
     <div id="index-list"></div>
   </div>
 
-  <div class="screen" id="screen-search">
-    <div class="search-bar">
-      <div class="search-field">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
-        <input id="search-input" placeholder="搜索" oninput="runSearch()">
-      </div>
-      <span class="search-cancel" onclick="closeSearch()">取消</span>
-    </div>
-    <div id="search-default"></div>
-    <div id="search-results"></div>
-  </div>
 
   <div class="screen" id="screen-detail">
     <p class="back" onclick="closeDetail()">‹ 返回</p>
@@ -498,10 +496,30 @@
 </div>
 
 <div class="item-page" id="item-page">
-  <p class="back" onclick="closeItemPage()">‹ 记录日历</p>
+  <p class="back" id="ip-back" onclick="closeItemPage()">‹ 记录日历</p>
   <p class="bio-name" id="ip-name"></p>
   <p class="bio-state" id="ip-state"></p>
   <div id="ip-entries"></div>
+</div>
+
+<div class="scrim" id="search-scrim" onclick="closeSearch()"></div>
+<div class="drawer" id="search-sheet">
+  <div class="search-bar">
+    <div class="search-field">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+      <input id="search-input" placeholder="搜物品名，或你写下的任何一句" oninput="runSearch()">
+    </div>
+    <span class="search-cancel" onclick="closeSearch()">取消</span>
+  </div>
+  <div id="search-default">
+    <p class="idx-cat" id="recent-title">最近看过</p>
+    <div class="idx-group" id="search-recent"></div>
+    <p class="idx-cat">快捷</p>
+    <div class="idx-group">
+      <div class="idx-row" onclick="searchPhotos()"><div class="rtop"><span class="rname">只看有照片的记录</span><span class="rtime" id="photo-count"></span></div></div>
+    </div>
+  </div>
+  <div id="search-results"></div>
 </div>
 
 <div class="overlay" id="ritual" onclick="hideRitual()">
@@ -703,6 +721,7 @@ let lastScreen = "timeline";
 let currentKey = null;
 function openDetail(key) {
   currentKey = key;
+  recordRecent(key);
   const v = items[key];
   document.getElementById("d-name").textContent = v.name;
   document.getElementById("d-state").textContent = v.state;
@@ -1026,20 +1045,45 @@ function exitDelMode() {
   renderEntries(items[currentKey]);
 }
 
+let recentViewed = [];
+function recordRecent(key) {
+  recentViewed = [key, ...recentViewed.filter(k => k !== key)].slice(0, 6);
+}
+function searchRowHtml(k, right) {
+  const v = items[k];
+  return `<div class="idx-row" onclick="openItemPage('${k}','返回')"><div class="rtop"><span class="rname">${v.name}</span><span class="rtime">${right}</span></div><p class="rsub">${v.sub}</p></div>`;
+}
+function renderSearchDefault() {
+  const recent = recentViewed.filter(k => items[k]).slice(0, 4);
+  document.getElementById("recent-title").style.display = recent.length ? "" : "none";
+  document.getElementById("search-recent").style.display = recent.length ? "" : "none";
+  document.getElementById("search-recent").innerHTML = recent.map(k => searchRowHtml(k, items[k].time)).join("");
+  const nPhoto = Object.keys(items).filter(k => items[k].entries.some(e => e.img)).length;
+  document.getElementById("photo-count").textContent = nPhoto ? nPhoto + " ›" : "0";
+}
 function openSearch() {
-  lastScreen = document.querySelector(".screen.active").id.replace("screen-", "");
-  if (lastScreen === "search" || lastScreen === "detail" || lastScreen === "create") lastScreen = "timeline";
-  showScreen("search");
-  document.getElementById("tabbar").style.display = "none";
   document.getElementById("search-input").value = "";
   document.getElementById("search-results").innerHTML = "";
   document.getElementById("search-default").style.display = "";
-  window.scrollTo(0, 0);
-  setTimeout(() => document.getElementById("search-input").focus(), 50);
+  renderSearchDefault();
+  openSheet("search-sheet", "search-scrim");
+  setTimeout(() => document.getElementById("search-input").focus(), 320);
 }
-function closeSearch() {
-  showScreen(lastScreen);
-  document.getElementById("tabbar").style.display = "";
+function closeSearch() { closeSheet("search-sheet", "search-scrim"); }
+function searchPhotos() {
+  document.getElementById("search-default").style.display = "none";
+  const box = document.getElementById("search-results");
+  const hits = Object.keys(items).filter(k => items[k].entries.some(e => e.img));
+  const back = `<p class="back" style="padding:4px 0 6px" onclick="backToSearchDefault()">‹ 搜索</p>`;
+  box.innerHTML = back + (hits.length
+    ? `<p class="idx-cat" style="margin-top:8px">有照片的记录 · ${hits.length}</p><div class="idx-group">${hits.map(k => searchRowHtml(k, items[k].time)).join("")}</div>`
+    : `<p class="empty-note">还没有带照片的记录。</p>`);
+}
+function backToSearchDefault() {
+  document.getElementById("search-results").innerHTML = "";
+  document.getElementById("search-input").value = "";
+  document.getElementById("search-default").style.display = "";
+  renderSearchDefault();
 }
 function runSearch() {
   const q = document.getElementById("search-input").value.trim();
@@ -1052,13 +1096,9 @@ function runSearch() {
     return v.name.includes(q) || (v.quote || "").includes(q) ||
       v.entries.some(e => (e.text || "").includes(q));
   });
-  box.innerHTML = hits.length ? hits.map(k => {
-    const v = items[k];
-    return `<div class="row" style="margin-top:10px" onclick="openDetail('${k}')">
-      <div class="row-top"><span class="name">${v.name}</span><span class="time">${v.state}</span></div>
-      <p class="sub">${v.sub}</p>
-    </div>`;
-  }).join("") : `<p class="empty-note">没有找到与「${q}」有关的记录。</p>`;
+  box.innerHTML = hits.length
+    ? `<div class="idx-group" style="margin-top:8px">${hits.map(k => searchRowHtml(k, items[k].state)).join("")}</div>`
+    : `<p class="empty-note">没有找到与「${q}」有关的记录。</p>`;
 }
 
 function openDrawer() { openSheet("drawer", "scrim"); }
@@ -1127,6 +1167,7 @@ function bindSheetDrag(sheetId, closeFn) {
 }
 bindSheetDrag("drawer", closeDrawer);
 bindSheetDrag("cal-sheet", closeCalendar);
+bindSheetDrag("search-sheet", closeSearch);
 
 /* ── 记录日历页 ── */
 let cpYear = now.getFullYear(), cpMonth = now.getMonth(), cpSel = null;
@@ -1163,7 +1204,7 @@ function buildDayMap() {
 }
 function renderCalendarPage() {
   const yearItems = Object.values(items);
-  document.getElementById("cp-num").textContent = yearItems.length;
+  document.getElementById("cp-num").innerHTML = yearItems.length + `<span style="font-size:18px;font-weight:600;margin-left:4px;">件</span>`;
   document.getElementById("cp-title").textContent = cpYear + " 年 " + cn[cpMonth] + "月";
   const map = buildDayMap();
   const first = new Date(cpYear, cpMonth, 1).getDay();
@@ -1211,9 +1252,11 @@ function cnDayFull(d) {
   if (d === 30) return "三十";
   return "三十一";
 }
-function openItemPage(key) {
+function openItemPage(key, backLabel) {
   const v = items[key];
   if (!v) return;
+  recordRecent(key);
+  document.getElementById("ip-back").textContent = "‹ " + (backLabel || "记录日历");
   document.getElementById("ip-name").textContent = v.name;
   document.getElementById("ip-state").textContent = v.state;
   document.getElementById("ip-entries").innerHTML = v.entries.map(e =>
@@ -1450,6 +1493,7 @@ function calReset() {
 
 restore();
 applyProfile();
+recentViewed = Object.keys(items).slice(0, 3);
 renderTimeline();
 renderIndex();
 if (profile.remind) document.getElementById("set-remind").textContent = profile.remind;
