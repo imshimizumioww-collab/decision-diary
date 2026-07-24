@@ -655,19 +655,18 @@ function renderTimeline() {
 }
 
 let currentFilter = "all";
-const idxStatusOrder = [
+const idxStatusFilters = [
+  ["all", "全部"],
   ["deciding", "犹豫中"],
   ["companion", "陪伴中"],
-  ["idle", "闲置"],
   ["passed", "没有买"],
-  ["ended", "告别"],
-  ["shelved", "搁置"]
+  ["idle", "闲置"],
+  ["ended", "告别"]
 ];
 function renderIndexFilters() {
   const el = document.getElementById("index-filters");
-  const cats = ["all", ...catOrder];
-  el.innerHTML = cats.map(c =>
-    `<span class="filter ${c === currentFilter ? "on" : ""}" data-f="${c}">${c === "all" ? "全部" : c}</span>`
+  el.innerHTML = idxStatusFilters.map(([st, label]) =>
+    `<span class="filter ${st === currentFilter ? "on" : ""}" data-f="${st}">${label}</span>`
   ).join("");
   el.querySelectorAll(".filter").forEach(f => f.addEventListener("click", () => {
     currentFilter = f.dataset.f;
@@ -678,18 +677,22 @@ function renderIndex() {
   renderIndexFilters();
   const el = document.getElementById("index-list");
   const sub = document.getElementById("index-sub");
-  const keys = Object.keys(items).filter(k => currentFilter === "all" || items[k].cat === currentFilter);
-  sub.textContent = currentFilter === "all"
-    ? `你认真想过 ${keys.length} 件东西`
-    : `${keys.length} 件 · ${currentFilter}`;
+  const keys = Object.keys(items).filter(k => currentFilter === "all" || items[k].status === currentFilter);
+  if (currentFilter === "all") sub.textContent = `你认真想过 ${keys.length} 件东西`;
+  else if (currentFilter === "companion") sub.textContent = `${keys.length} 件东西正陪伴着你`;
+  else if (currentFilter === "deciding") sub.textContent = `你正在考虑 ${keys.length} 件东西`;
+  else if (currentFilter === "idle") sub.textContent = `${keys.length} 件东西正在闲置`;
+  else if (currentFilter === "ended") sub.textContent = `你与 ${keys.length} 件东西告别了`;
+  else sub.textContent = `你想清楚后放下了 ${keys.length} 件东西`;
   let html = "";
-  idxStatusOrder.forEach(([st, label]) => {
-    const group = keys.filter(k => items[k].status === st);
+  catOrder.forEach(c => {
+    const group = keys.filter(k => items[k].cat === c);
     if (!group.length) return;
-    html += `<p class="idx-cat">${label} · ${group.length}</p><div class="idx-group">`;
+    html += `<p class="idx-cat">${c} · ${group.length}</p><div class="idx-group">`;
     group.forEach(k => {
       const v = items[k];
-      html += `<div class="idx-row" onclick="openDetail('${k}')"><div class="rtop"><span class="rname">${v.name}</span><span class="rtime">${v.time}</span></div><p class="rsub">${v.sub}</p></div>`;
+      const right = currentFilter === "all" ? v.state : v.time;
+      html += `<div class="idx-row" onclick="openDetail('${k}')"><div class="rtop"><span class="rname">${v.name}</span><span class="rtime">${right}</span></div><p class="rsub">${v.sub}</p></div>`;
     });
     html += `</div>`;
   });
