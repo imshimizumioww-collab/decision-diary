@@ -496,7 +496,7 @@
 </div>
 
 <div class="item-page" id="item-page">
-  <p class="back" onclick="closeItemPage()">‹ 记录日历</p>
+  <p class="back" id="ip-back" onclick="closeItemPage()">‹ 记录日历</p>
   <p class="bio-name" id="ip-name"></p>
   <p class="bio-state" id="ip-state"></p>
   <div id="ip-entries"></div>
@@ -1051,7 +1051,7 @@ function recordRecent(key) {
 }
 function searchRowHtml(k, right) {
   const v = items[k];
-  return `<div class="idx-row" onclick="openDetail('${k}')"><div class="rtop"><span class="rname">${v.name}</span><span class="rtime">${right}</span></div><p class="rsub">${v.sub}</p></div>`;
+  return `<div class="idx-row" onclick="openItemPage('${k}','搜索')"><div class="rtop"><span class="rname">${v.name}</span><span class="rtime">${right}</span></div><p class="rsub">${v.sub}</p></div>`;
 }
 function renderSearchDefault() {
   const recent = recentViewed.filter(k => items[k]).slice(0, 4);
@@ -1245,9 +1245,11 @@ function cnDayFull(d) {
   if (d === 30) return "三十";
   return "三十一";
 }
-function openItemPage(key) {
+function openItemPage(key, backLabel) {
   const v = items[key];
   if (!v) return;
+  recordRecent(key);
+  document.getElementById("ip-back").textContent = "‹ " + (backLabel || "记录日历");
   document.getElementById("ip-name").textContent = v.name;
   document.getElementById("ip-state").textContent = v.state;
   document.getElementById("ip-entries").innerHTML = v.entries.map(e =>
