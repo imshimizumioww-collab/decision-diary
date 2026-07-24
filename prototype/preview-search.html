@@ -1074,9 +1074,16 @@ function searchPhotos() {
   document.getElementById("search-default").style.display = "none";
   const box = document.getElementById("search-results");
   const hits = Object.keys(items).filter(k => items[k].entries.some(e => e.img));
-  box.innerHTML = hits.length
-    ? `<p class="idx-cat">有照片的记录 · ${hits.length}</p><div class="idx-group">${hits.map(k => searchRowHtml(k, items[k].time)).join("")}</div>`
-    : `<p class="empty-note">还没有带照片的记录。</p>`;
+  const back = `<p class="back" style="padding:4px 0 6px" onclick="backToSearchDefault()">‹ 上一页</p>`;
+  box.innerHTML = back + (hits.length
+    ? `<p class="idx-cat" style="margin-top:8px">有照片的记录 · ${hits.length}</p><div class="idx-group">${hits.map(k => searchRowHtml(k, items[k].time)).join("")}</div>`
+    : `<p class="empty-note">还没有带照片的记录。</p>`);
+}
+function backToSearchDefault() {
+  document.getElementById("search-results").innerHTML = "";
+  document.getElementById("search-input").value = "";
+  document.getElementById("search-default").style.display = "";
+  renderSearchDefault();
 }
 function runSearch() {
   const q = document.getElementById("search-input").value.trim();
