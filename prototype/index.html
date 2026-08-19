@@ -669,7 +669,15 @@ const statusNames = { companion: "陪伴中", deciding: "犹豫中", passed: "�
 function renderTimeline() {
   const el = document.getElementById("timeline-list");
   let html = "";
-  monthOrder.forEach(m => {
+  // 按物品实际所属的月份动态分组（新→旧，"更早" 永远在最后），
+  // 保证新添加的记录出现在正确的当月分组，与日历保持一致。
+  const present = [];
+  Object.values(items).forEach(v => {
+    if (v.status !== "shelved" && !present.includes(v.month)) present.push(v.month);
+  });
+  const monthRank = m => (m === "更早" ? -1 : cnMonthIdx(m.replace("月", "")));
+  const order = present.sort((a, b) => monthRank(b) - monthRank(a));
+  order.forEach(m => {
     const group = Object.entries(items).filter(([k, v]) => v.month === m && v.status !== "shelved");
     if (!group.length) return;
     html += `<p class="month">${m}</p>`;
@@ -882,13 +890,15 @@ function saveCreate() {
   const dateVal = createCalUsed ? calSelected : null;
   const dateCn = dateVal ? dateToCn(dateVal) : todayCn;
   const days = dateVal ? daysDiff(dateVal) : 1;
+  // 依据记录的实际日期归入对应月份分组，让时间线与日历一致
+  const recMonthIdx = dateVal ? new Date(dateVal + "T00:00:00").getMonth() : now.getMonth();
   if (!catOrder.includes(cat)) catOrder.push(cat);
   const meta = [["记录日期", dateCn]];
   if (price) meta.unshift(["关注价格", price]);
   const key = "u" + Date.now();
   items[key] = {
     name, cat, status: "deciding",
-    state: "犹豫中 · 第 " + days + " 天", time: "第 " + days + " 天", month: monthOrder[0],
+    state: "犹豫中 · 第 " + days + " 天", time: "第 " + days + " 天", month: cn[recMonthIdx] + "月",
     quote: "「" + why.split(/[。？！\n]/)[0] + "。」",
     sub: "记于 · " + dateCn,
     entries: [{ date: dateCn, kind: "起点", text: why, img: picked.c || undefined }],
@@ -1384,6 +1394,8 @@ function saveCompose() {
   const entryIso = composeCalUsed && calSelected ? calSelected : null;
   const entryDate = entryIso ? dateToCn(entryIso) : todayCn;
   const entryTs = entryIso ? new Date(entryIso + "T12:00:00").getTime() : Date.now();
+  const entryMonthIdx = entryIso ? new Date(entryIso + "T12:00:00").getMonth() : now.getMonth();
+  const entryMonthCn = cn[entryMonthIdx] + "月";
   const days = (v.state.match(/第 (\d+) 天/) || [])[1];
   if (composeMode === "buy") {
     v.entries.push({ ts: entryTs, date: entryDate, kind: "决定购买", text, img: picked.d || undefined });
@@ -1392,24 +1404,26 @@ function saveCompose() {
     showRitual(days ? `犹豫了 ${days} 天，你决定带它回家。` : "你想清楚了，决定带它回家。", "决定购买", v.name);
   } else if (composeMode === "pass") {
     v.entries.push({ ts: entryTs, date: entryDate, kind: "决定不买", text, img: picked.d || undefined });
-    v.status = "passed"; v.state = "想清楚了，没有买"; v.time = monthOrder[0]; v.sub = "想清楚于 · " + monthOrder[0];
+    v.status = "passed"; v.state = "想清楚了，没有买"; v.time = entryMonthCn; v.sub = "想清楚于 · " + entryMonthCn;
     showRitual(days ? `这个念头陪了你 ${days} 天，你想清楚了。` : "你想清楚了，放下了它。", "决定不买", v.name);
   } else if (composeMode === "review") {
     v.entries.push({ ts: entryTs, date: entryDate, kind: "回访", text, img: picked.d || undefined });
     v.sub = entryIso ? "上次回访 · " + entryDate : "上次回访 · 刚刚";
   } else if (composeMode === "idle") {
     v.entries.push({ ts: entryTs, date: entryDate, kind: "闲置", text, img: picked.d || undefined });
-    v.status = "idle"; v.state = "闲置了"; v.time = monthOrder[0]; v.sub = "闲置于 · " + monthOrder[0];
+    v.status = "idle"; v.state = "闲置了"; v.time = entryMonthCn; v.sub = "闲置于 · " + entryMonthCn;
   } else if (composeMode === "revive") {
     v.entries.push({ ts: entryTs, date: entryDate, kind: "回访", text, img: picked.d || undefined });
     v.status = "companion"; v.state = "陪伴你 · 又开始了"; v.time = "又开始了"; v.sub = "上次回访 · 刚刚";
   } else if (composeMode === "bye") {
     v.entries.push({ ts: entryTs, date: entryDate, kind: "告别", text, img: picked.d || undefined });
-    v.status = "ended"; v.state = "告别了 · " + monthOrder[0]; v.time = monthOrder[0]; v.sub = "告别于 · " + monthOrder[0];
+    v.status = "ended"; v.state = "告别了 · " + entryMonthCn; v.time = entryMonthCn; v.sub = "告别于 · " + entryMonthCn;
     showRitual("它陪伴过你的日子，都记在这里了。", "告别", v.name);
   } else {
     v.entries.push({ ts: entryTs, date: entryDate, kind: "追记", text, img: picked.d || undefined });
   }
+  // 新记录让物品归入该记录所在月份，时间线随之上浮，与日历日期保持一致
+  v.month = entryMonthCn;
   renderTimeline(); renderIndex();
   persist();
   openDetail(currentKey);
