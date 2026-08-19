@@ -147,11 +147,6 @@
   .entry .date { font-size: 11.5px; color: var(--gray-mute); letter-spacing: 2px; }
   .entry .kind { font-size: 11.5px; color: var(--gray-light); margin-left: 10px; }
   .entry .e-del { margin-left: auto; font-size: 13px; color: var(--gray-light); cursor: pointer; line-height: 1; padding: 3px 8px; border: 1px solid var(--line); border-radius: 7px; }
-  .entry .e-edit { margin-left: auto; font-size: 12.5px; color: var(--ink-soft); cursor: pointer; line-height: 1; padding: 3px 9px; border: 1px solid var(--line); border-radius: 7px; }
-  .entry .e-edit + .e-del { margin-left: 6px; }
-  .meta .meta-edit { background: transparent; border: none; border-bottom: 1px solid var(--line); font-family: var(--sans); font-size: 13px; color: var(--ink-soft); text-align: right; padding: 2px 0; outline: none; width: 55%; }
-  .meta .mval { display: inline-flex; align-items: center; }
-  .meta .meta-edit-btn { margin-left: 8px; font-size: 11px; color: var(--ink-soft); cursor: pointer; border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; line-height: 1; }
   .entry .text { font-size: 15px; line-height: 1.8; color: var(--ink); margin-top: 10px; }
   .meta { margin-top: 40px; background: var(--card); border-radius: 18px; padding: 4px 16px 8px; }
   .meta summary { font-size: 12px; color: var(--gray-mute); padding: 10px 0; cursor: pointer; list-style: none; }
@@ -401,8 +396,8 @@
     <details class="meta" id="d-meta">
       <summary>记录信息</summary>
       <div id="d-meta-rows"></div>
-      <p class="del-link" id="d-del-link" onclick="toggleDelMode()">管理记录</p>
-      <p class="del-hint" id="d-del-hint" style="display:none">点条目右上角的 ✎ 修改、× 删除单条；价格、日期点旁边的 ✎ 也能改。删除不可恢复；全部删完后，再点一次"管理记录"即可删除整个物品。<span class="del-done" onclick="exitDelMode()">完成</span></p>
+      <p class="del-link" id="d-del-link" onclick="toggleDelMode()">删除记录</p>
+      <p class="del-hint" id="d-del-hint" style="display:none">点条目右侧的 × 删除单条，删除不可恢复。全部删完后，再点一次"删除记录"即可删除整个物品。<span class="del-done" onclick="exitDelMode()">完成</span></p>
     </details>
   </div>
 
@@ -750,12 +745,13 @@ let currentKey = null;
 function openDetail(key) {
   currentKey = key;
   recordRecent(key);
-  delMode = false; metaEditingIdx = null;
   const v = items[key];
   document.getElementById("d-name").textContent = v.name;
   document.getElementById("d-state").textContent = v.state;
   renderEntries(v);
-  renderMetaRows(v);
+  document.getElementById("d-meta-rows").innerHTML = v.meta.map(m =>
+    `<div class="mrow"><span>${m[0]}</span><span>${m[1]}</span></div>`
+  ).join("");
   document.getElementById("d-meta").removeAttribute("open");
   renderActions(v);
   hideCompose();
@@ -1024,52 +1020,8 @@ let delMode = false;
 
 function renderEntries(v) {
   document.getElementById("d-entries").innerHTML = v.entries.map((e, i) =>
-    `<div class="entry"><div class="e-head"><span class="date">${e.date}</span><span class="kind">${e.kind}</span>${delMode ? `<span class="e-edit" onclick="editEntry(${i})">✎</span><span class="e-del" onclick="delEntry(${i})">×</span>` : ""}</div>${e.text ? `<p class="text">${e.text}</p>` : ""}${e.img ? `<img src="${e.img}">` : ""}</div>`
+    `<div class="entry"><div class="e-head"><span class="date">${e.date}</span><span class="kind">${e.kind}</span>${delMode ? `<span class="e-del" onclick="delEntry(${i})">×</span>` : ""}</div>${e.text ? `<p class="text">${e.text}</p>` : ""}${e.img ? `<img src="${e.img}">` : ""}</div>`
   ).join("");
-}
-let metaEditingIdx = null;
-function renderMetaRows(v) {
-  document.getElementById("d-meta-rows").innerHTML = v.meta.map((m, i) => {
-    const val = String(m[1] || "");
-    if (!delMode) return `<div class="mrow"><span>${m[0]}</span><span>${val}</span></div>`;
-    if (metaEditingIdx === i)
-      return `<div class="mrow"><span>${m[0]}</span><input class="meta-edit" value="${val.replace(/"/g, "&quot;")}" onblur="commitMetaEdit(${i}, this.value)" onkeydown="if(event.key==='Enter')this.blur()"></div>`;
-    // 管理模式下：显示值 + 一个小小的 ✎，点它才弹出输入框
-    return `<div class="mrow"><span>${m[0]}</span><span class="mval">${val}<span class="meta-edit-btn" onclick="startMetaEdit(${i})">✎</span></span></div>`;
-  }).join("");
-}
-function startMetaEdit(i) {
-  metaEditingIdx = i;
-  renderMetaRows(items[currentKey]);
-  const inp = document.querySelector("#d-meta-rows .meta-edit");
-  if (inp) { inp.focus(); try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch (e) {} }
-}
-function commitMetaEdit(i, val) {
-  items[currentKey].meta[i][1] = val.trim();
-  metaEditingIdx = null;
-  persist();
-  renderMetaRows(items[currentKey]);
-}
-let editingEntry = null;
-function editEntry(i) {
-  const v = items[currentKey];
-  const e = v.entries[i];
-  editingEntry = i;
-  composeMode = "edit";
-  const t = document.getElementById("d-compose-text");
-  t.value = e.text || "";
-  t.placeholder = "修改这条记录…";
-  resetPhoto("d");
-  composeCalUsed = false;
-  document.getElementById("d-date-line").textContent = "记录时间 · " + (e.date || "今天");
-  const calW = document.getElementById("c-cal-wrap");
-  if (document.getElementById("d-cal-slot").contains(calW)) calW.style.display = "none";
-  document.getElementById("d-compose-hint").style.display = "none";
-  document.getElementById("d-photo-label").textContent = e.img ? "换一张图（可不填）" : "添加一张图（可不填）";
-  document.getElementById("d-compose").style.display = "block";
-  document.getElementById("d-actions").style.display = "none";
-  document.getElementById("d-compose").scrollIntoView({ behavior: "smooth", block: "center" });
-  t.focus();
 }
 
 function delEntry(i) {
@@ -1109,19 +1061,13 @@ function toggleDelMode() {
     return;
   }
   delMode = !delMode;
-  metaEditingIdx = null;
   document.getElementById("d-del-hint").style.display = delMode ? "block" : "none";
-  if (!delMode) hideCompose();
   renderEntries(v);
-  renderMetaRows(v);
 }
 function exitDelMode() {
   delMode = false;
-  metaEditingIdx = null;
   document.getElementById("d-del-hint").style.display = "none";
-  hideCompose();
   renderEntries(items[currentKey]);
-  renderMetaRows(items[currentKey]);
 }
 
 let recentViewed = [];
@@ -1402,7 +1348,6 @@ function renderActions(v) {
   el.style.display = "flex";
 }
 function startCompose(mode) {
-  editingEntry = null;
   composeMode = mode;
   const ph = {
     buy: "为什么决定买？给未来的自己留一句。",
@@ -1430,31 +1375,11 @@ function startCompose(mode) {
 function hideCompose() {
   document.getElementById("d-compose").style.display = "none";
   document.getElementById("d-actions").style.display = "flex";
-  editingEntry = null;
-  if (composeMode === "edit") composeMode = null;
 }
 function saveCompose() {
   const v = items[currentKey];
   const text = document.getElementById("d-compose-text").value.trim();
   const hint = document.getElementById("d-compose-hint");
-  // 修改已有记录（复用底部输入框）：写回原记录，不新增
-  if (composeMode === "edit" && editingEntry != null) {
-    const e = v.entries[editingEntry];
-    if (!text && !picked.d && !e.img) {
-      hint.textContent = "写一句，或加一张照片。";
-      hint.style.display = "block";
-      return;
-    }
-    e.text = text;
-    if (picked.d) e.img = picked.d;
-    if (editingEntry === 0) v.quote = text ? "「" + text.split(/[。？！\n]/)[0] + "。」" : "";
-    editingEntry = null; composeMode = null;
-    hideCompose();
-    renderEntries(v);
-    renderTimeline(); renderIndex();
-    persist();
-    return;
-  }
   if (!text && !picked.d) {
     hint.textContent = "写一句，或加一张照片。";
     hint.style.display = "block";
