@@ -158,6 +158,10 @@
   .create-input::placeholder, .create-area::placeholder { color: var(--gray-faint); }
   .create-area { width: 100%; min-height: 140px; background: transparent; border: none; padding: 16px 0 0; font-size: 16px; line-height: 1.8; outline: none; resize: none; color: var(--ink); margin-top: 4px; }
   .create-actions { margin-top: 30px; display: flex; gap: 12px; align-items: center; }
+  /* ➕新建物品页：输入框改为白色卡片，与详情页（参考图）的白框一比一保持一致 */
+  #screen-create .create-input { background: var(--card); border: none; border-radius: 14px; padding: 15px 16px; margin-top: 12px; }
+  #screen-create .create-area { background: var(--card); border: none; border-radius: 18px; padding: 15px 16px; min-height: 140px; margin-top: 12px; }
+  #screen-create .create-q + .create-input, #screen-create .create-q + .create-area { margin-top: 16px; }
   .btn { font-family: var(--sans); font-size: 13.5px; padding: 10px 22px; border-radius: 22px; cursor: pointer; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); }
   .btn.ghost { background: transparent; border-color: var(--line); color: var(--gray); }
   .overlay { position: fixed; inset: 0; background: var(--paper); display: none; align-items: center; justify-content: center; text-align: center; padding: 44px; z-index: 40; }
@@ -174,10 +178,7 @@
   .detail-actions { margin-top: 36px; display: flex; gap: 10px; flex-wrap: wrap; }
   .compose { margin-top: 24px; display: none; }
   .compose .create-area { background: var(--card); border-radius: 18px; padding: 15px 16px; margin-top: 0; min-height: 140px; }
-  .compose .photo-line { padding-left: 16px; }
-  .compose .photo-preview { margin-left: 16px; }
-  .compose .create-actions { padding-left: 16px; }
-  .compose-hint { font-size: 12px; color: var(--gray-light); margin-top: 12px; display: none; padding-left: 16px; }
+  .compose-hint { font-size: 12px; color: var(--gray-light); margin-top: 12px; display: none; }
   .del-link { font-size: 12px; color: var(--gray-light); padding: 14px 0 4px; cursor: pointer; }
   .del-warn { font-size: 13px; color: var(--ink-soft); margin-top: 12px; }
   .del-hint { font-size: 12px; color: var(--gray-light); margin-top: 8px; line-height: 1.8; }
