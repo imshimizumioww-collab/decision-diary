@@ -187,25 +187,34 @@
   .photo-line { margin-top: 16px; font-size: 12.5px; color: var(--gray-light); cursor: pointer; }
   .photo-line .picked { color: var(--ink-soft); }
   .entry img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; margin-top: 12px; display: block; }
-  .cal-wrap { margin-top: 20px; background: var(--card); border-radius: 18px; padding: 16px 14px 14px; }
-  .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-  .cal-title { font-family: var(--serif); font-size: 15px; color: var(--ink); letter-spacing: 1px; }
-  .cal-arrow { font-size: 18px; color: var(--gray); cursor: pointer; padding: 4px 10px; user-select: none; }
-  .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; color: var(--gray-mute); letter-spacing: 1px; margin-bottom: 6px; }
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 2px 0; }
-  .cal-cell { font-size: 13.5px; color: var(--ink-soft); padding: 8px 0; cursor: pointer; border-radius: 50%; transition: background .15s; line-height: 1; }
-  .cal-cell:active { background: var(--line); }
+  .cal-wrap {
+    --cal-confirm-x: -2px;
+    --cal-confirm-font-size: 26px;
+    margin-top: 20px;
+    margin-left: -16.5px;
+    width: calc(100% + 27px);
+    background: var(--card);
+    border-radius: 14px;
+    padding: 20px 14px 14px;
+  }
+  .cal-manual { display: flex; align-items: center; gap: 4px; padding-bottom: 13px; border-bottom: 1px solid var(--line); }
+  .cal-input { width: 47px; background: transparent; border: none; border-bottom: 1px solid var(--line); font-family: var(--sans); font-size: 13px; line-height: 1; color: var(--ink); text-align: left; padding: 0 0 4px; outline: none; font-weight: 400; }
+  .cal-input-sm { width: 26px; }
+  .cal-sep { font-size: 10.5px; color: var(--gray-mute); font-weight: 700; }
+  .cal-go { font-size: 10.5px; color: var(--ink-soft); cursor: pointer; margin-left: 7px; padding-bottom: 4px; font-weight: 700; white-space: nowrap; }
+  .cal-head { display: grid; grid-template-columns: 24px 1fr 24px; align-items: center; padding: 16px 0 12px; }
+  .cal-title { font-family: var(--sans); font-size: 16px; line-height: 1; color: var(--ink); letter-spacing: 2px; text-align: center; font-weight: 400; }
+  .cal-arrow { font-size: 23px; line-height: 1; color: var(--gray); cursor: pointer; padding: 0; user-select: none; font-weight: 300; }
+  .cal-arrow-next { text-align: right; }
+  .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11.5px; line-height: 1; color: var(--gray-mute); margin-bottom: 9px; font-weight: 600; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 31px; text-align: center; align-items: center; }
+  .cal-cell { height: 29px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink-soft); font-size: 14px; line-height: 1; font-weight: 400; }
   .cal-cell.empty { cursor: default; }
-  .cal-cell.today { color: var(--ink); font-weight: 600; }
-  .cal-cell.selected { background: var(--ink); color: var(--paper); font-weight: 500; }
-  .cal-confirm-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-faint); display: flex; justify-content: flex-end; }
-  .cal-confirm { font-family: var(--sans); font-size: 14px; color: var(--ink-soft); cursor: pointer; background: transparent; border: none; border-bottom: 1px solid var(--line); border-radius: 0; padding: 0 0 1px; }
-  .cal-cell.other { color: var(--gray-faint); }
-  .cal-manual { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line-faint); }
-  .cal-input { width: 48px; background: transparent; border: none; border-bottom: 1px solid var(--line); font-family: var(--sans); font-size: 13px; color: var(--ink); text-align: center; padding: 4px 0; outline: none; }
-  .cal-input-sm { width: 36px; }
-  .cal-sep { font-size: 12px; color: var(--gray-mute); }
-  .cal-go { font-size: 12px; color: var(--ink-soft); cursor: pointer; margin-left: 6px; border-bottom: 1px solid var(--line); padding-bottom: 1px; }
+  .cal-cell.today .cal-day { font-weight: 500; }
+  .cal-cell.selected .cal-day { width: 49px; height: 29px; border-radius: 999px; background: var(--ink); color: var(--paper); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .cal-day { min-width: 21px; height: 21px; display: flex; align-items: center; justify-content: center; }
+  .cal-confirm-row { margin-top: 8px; padding-top: 15px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; }
+  .cal-confirm { font-family: var(--sans); font-size: var(--cal-confirm-font-size); color: var(--ink-soft); cursor: pointer; background: transparent; border: none; border-bottom: 1px solid var(--line); border-radius: 0; padding: 0 0 3px; transform: translateX(var(--cal-confirm-x)); font-weight: 700; }
   .card-row { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
   .card-thumb { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
   .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; display: none; cursor: pointer; }
@@ -418,9 +427,9 @@
           <span class="cal-go" onclick="calManualGo()">跳转</span>
         </div>
         <div class="cal-head">
-          <span class="cal-arrow" onclick="calNav(-1)">‹</span>
+          <span class="cal-arrow cal-arrow-prev" onclick="calNav(-1)">‹</span>
           <span class="cal-title" id="cal-title"></span>
-          <span class="cal-arrow" onclick="calNav(1)">›</span>
+          <span class="cal-arrow cal-arrow-next" onclick="calNav(1)">›</span>
         </div>
         <div class="cal-weekdays">
           <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
@@ -1424,7 +1433,7 @@ function renderCal() {
     const cls = ["cal-cell"];
     if (isToday) cls.push("today");
     if (isSel) cls.push("selected");
-    html += `<span class="${cls.join(" ")}" onclick="calPick('${iso}')">${d}</span>`;
+    html += `<span class="${cls.join(" ")}" onclick="calPick('${iso}')"><span class="cal-day">${d}</span></span>`;
   }
   grid.innerHTML = html;
   document.getElementById("cal-y").value = calYear;
