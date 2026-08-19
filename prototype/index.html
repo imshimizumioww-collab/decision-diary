@@ -158,8 +158,8 @@
   .create-input::placeholder, .create-area::placeholder { color: var(--gray-faint); }
   .create-area { width: 100%; min-height: 140px; background: transparent; border: none; padding: 16px 0 0; font-size: 16px; line-height: 1.8; outline: none; resize: none; color: var(--ink); margin-top: 4px; }
   .create-actions { margin-top: 30px; display: flex; gap: 12px; align-items: center; }
-  /* 新建物品页正文（问题~记下）整体右移一点点 */
-  #cstep1, #cstep2 { transform: translateX(8px); }
+  /* 新建物品页正文（问题~记下）左缘与返回链接「先放着」的「先」对齐 */
+  #cstep1, #cstep2 { transform: translateX(6px); }
   .btn { font-family: var(--sans); font-size: 13.5px; padding: 10px 22px; border-radius: 22px; cursor: pointer; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); }
   .btn.ghost { background: transparent; border-color: var(--line); color: var(--gray); }
   .overlay { position: fixed; inset: 0; background: var(--paper); display: none; align-items: center; justify-content: center; text-align: center; padding: 44px; z-index: 40; }
@@ -198,6 +198,8 @@
   .cal-cell.empty { cursor: default; }
   .cal-cell.today { color: var(--ink); font-weight: 600; }
   .cal-cell.selected { background: var(--ink); color: var(--paper); font-weight: 500; }
+  .cal-confirm-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-faint); display: flex; justify-content: flex-end; }
+  .cal-confirm { font-family: var(--sans); font-size: 13px; padding: 8px 24px; border-radius: 20px; background: var(--ink); color: var(--paper); border: none; cursor: pointer; }
   .cal-cell.other { color: var(--gray-faint); }
   .cal-manual { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line-faint); }
   .cal-input { width: 48px; background: transparent; border: none; border-bottom: 1px solid var(--line); font-family: var(--sans); font-size: 13px; color: var(--ink); text-align: center; padding: 4px 0; outline: none; }
@@ -424,6 +426,7 @@
           <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
         </div>
         <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-confirm-row"><button class="cal-confirm" onclick="confirmCal()">确认</button></div>
       </div>
       <input class="create-input" id="c-price" placeholder="价格（可不填）">
       <input class="create-input" id="c-cat" placeholder="分类，比如：数码（可不填）">
@@ -1437,6 +1440,18 @@ function calPick(iso) {
   renderCal();
   syncComposeDateLabel();
   syncCreateDateLabel();
+}
+function confirmCal() {
+  const cal = document.getElementById("c-cal-wrap");
+  // 若还没点具体某天，默认确认为今天
+  if (!calSelected) {
+    calYear = now.getFullYear(); calMonth = now.getMonth();
+    calSelected = calYear + "-" + String(calMonth + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+    renderCal();
+  }
+  syncCreateDateLabel();
+  syncComposeDateLabel();
+  cal.style.display = "none";
 }
 function syncComposeDateLabel() {
   if (calSelected && document.getElementById("d-cal-slot").contains(document.getElementById("c-cal-wrap"))) {
