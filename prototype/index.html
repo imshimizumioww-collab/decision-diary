@@ -98,14 +98,15 @@
   .search-catrow svg { color: var(--ink-soft); }
   .scrim { position: fixed; inset: 0; background: transparent; display: none; z-index: 20; }
   .scrim.show { display: block; }
-  body.sheet-open { overflow: hidden; height: 100vh; background: #000; }
+  html.sheet-open { overflow: hidden; height: 100%; overscroll-behavior: none; }
+  body.sheet-open { overflow: hidden; height: 100vh; background: #000; overscroll-behavior: none; }
   .sheet-backdrop { position: fixed; inset: 0; background: #000; display: none; z-index: 1; }
   body.sheet-open .sheet-backdrop { display: block; }
   #stage { min-height: 100vh; background: var(--paper); transform-origin: 50% 0; transition: transform .32s cubic-bezier(.32,.72,.35,1), border-radius .32s ease; }
   body.sheet-open #stage { position: relative; z-index: 2; transform: translateY(34px) scale(0.94); border-radius: 14px; overflow: hidden; height: 100vh; }
-  .drawer { position: fixed; left: 0; right: 0; bottom: 0; top: max(44px, calc(env(safe-area-inset-top) + 10px)); background: #F0ECEA; z-index: 21; transform: translateY(103%); transition: transform .32s cubic-bezier(.32,.72,.35,1); padding: 10px 24px 40px; overflow-y: auto; border-radius: 16px 16px 0 0; }
+  .drawer { position: fixed; left: 0; right: 0; bottom: 0; top: max(44px, calc(env(safe-area-inset-top) + 10px)); background: var(--paper); z-index: 21; transform: translateY(103%); transition: transform .32s cubic-bezier(.32,.72,.35,1); padding: 10px 24px 40px; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; border-radius: 16px 16px 0 0; }
   .drawer.show { transform: translateY(0); }
-  .item-page { position: fixed; left: 0; right: 0; bottom: 0; top: max(44px, calc(env(safe-area-inset-top) + 10px)); background: #F0ECEA; z-index: 30; transform: translateX(100%); transition: transform .3s cubic-bezier(.32,.72,.35,1); padding: 16px 24px 40px; overflow-y: auto; border-radius: 16px 16px 0 0; }
+  .item-page { position: fixed; left: 0; right: 0; bottom: 0; top: max(44px, calc(env(safe-area-inset-top) + 10px)); background: var(--paper); z-index: 30; transform: translateX(100%); transition: transform .3s cubic-bezier(.32,.72,.35,1); padding: 16px 24px 40px; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; border-radius: 16px 16px 0 0; }
   .item-page.show { transform: translateX(0); }
   .cp-section-title { font-size: 13px; color: var(--gray); font-weight: 500; margin: 26px 2px 10px; }
   .cp-section-title.first { margin-top: 10px; }
@@ -1113,18 +1114,34 @@ function setTheme(color) {
   const m = document.getElementById("theme-color");
   if (m) m.setAttribute("content", color);
 }
+let sheetOpenCount = 0;
+function lockBackground() {
+  // 锁定页面1（背景），使其在页面2打开时无法滑动，成为静止的卡片
+  if (sheetOpenCount === 0) {
+    document.documentElement.classList.add("sheet-open");
+    document.body.classList.add("sheet-open");
+  }
+  sheetOpenCount++;
+}
+function unlockBackground() {
+  sheetOpenCount = Math.max(0, sheetOpenCount - 1);
+  if (sheetOpenCount === 0) {
+    document.documentElement.classList.remove("sheet-open");
+    document.body.classList.remove("sheet-open");
+  }
+}
 function openSheet(sheetId, scrimId) {
   clearSheetInline(sheetId);
   document.getElementById(scrimId).classList.add("show");
   document.getElementById(sheetId).classList.add("show");
-  document.body.classList.add("sheet-open");
+  lockBackground();
   setTheme("#000000");
 }
 function closeSheet(sheetId, scrimId) {
   clearSheetInline(sheetId);
   document.getElementById(scrimId).classList.remove("show");
   document.getElementById(sheetId).classList.remove("show");
-  document.body.classList.remove("sheet-open");
+  unlockBackground();
   setTheme("#F6F1F0");
 }
 function clearSheetInline(sheetId) {
